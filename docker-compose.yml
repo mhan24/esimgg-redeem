@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: esimgg-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-esimgg}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?必须在 .env 中设置 POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-esimgg}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-esimgg} -d ${POSTGRES_DB:-esimgg}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - esimgg
+
+  app:
+    build: .
+    container_name: esimgg-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-esimgg}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-esimgg}?schema=public
+      APP_URL: ${APP_URL:-https://esimgg.setup0.de}
+      SESSION_SECRET: ${SESSION_SECRET:?必须在 .env 中设置 SESSION_SECRET}
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?必须在 .env 中设置 APP_ENCRYPTION_KEY}
+      ADMIN_INITIAL_USERNAME: ${ADMIN_INITIAL_USERNAME:-admin}
+      ADMIN_INITIAL_PASSWORD: ${ADMIN_INITIAL_PASSWORD:?必须在 .env 中设置 ADMIN_INITIAL_PASSWORD}
+      ESIM_API_BASE_URL: ${ESIM_API_BASE_URL:-https://api.esim.gg/api}
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+    ports:
+      # 仅监听本机回环, 由 Caddy/Nginx 反向代理并终止 TLS
+      - "127.0.0.1:3100:3000"
+    networks:
+      - esimgg
+
+networks:
+  esimgg:
+    driver: bridge
+
+volumes:
+  pgdata:

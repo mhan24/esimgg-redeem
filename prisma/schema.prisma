@@ -1,0 +1,166 @@
+// esim.gg 选号兑换系统 — Prisma Schema
+// 规格: esim.gg 选号兑换系统开发规格.md (§33-§37)
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// 管理员 (规格 §44: Argon2id/bcrypt hash, 禁止明文)
+model Admin {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+/// esim.gg API Key 多账号 (规格 §71)
+/// 按策略 (顺序/随机) 选用; 余额不足或明确失败时切换; 转移/对账必须用购买时的 key
+model EsimApiKey {
+  id            String    @id @default(cuid())
+  /// 备注名 (如 "主账号")
+  name          String
+  /// AES-256-GCM 加密后的 Key (规格 §46), 绝不明文返回
+  encryptedKey  String
+  enabled       Boolean   @default(true)
+  sortOrder     Int       @default(0)
+  lastUsedAt    DateTime?
+  /// 最近一次查到的 EUR 余额 (展示与低余额预警)
+  lastBalance   Decimal?  @db.Decimal(10, 2)
+  lastBalanceAt DateTime?
+  lastError     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  orders        Order[]
+
+  @@index([enabled, sortOrder])
+}
+
+/// 系统设置单例 (规格 §37)
+model SystemSetting {
+  id                     Int      @id @default(1)
+  siteName               String   @default("esim.gg 号码兑换")
+  /// AES-256-GCM 加密后的 esim.gg API Key (规格 §6), 绝不明文返回
+  /// 多 key 场景下仅作兜底 (规格 §71): 新表无启用 key 时回退使用
+  encryptedEsimApiKey    String?
+  /// 初始余额 EUR (规格 §7 默认 0.05, 按运营要求调整为 0.50)
+  initialBalance         Decimal  @default(0.5) @db.Decimal(10, 2)
+  allowFreeNumbers       Boolean  @default(true)
+  allowPaidNumbers       Boolean  @default(false)
+  maxPaidNumberPrice     Decimal  @default(2.00) @db.Decimal(10, 2)
+  /// global | asia (规格 §7)
+  numberType             String   @default("global")
+  /// sequential | random (规格 §71): 多 API Key 调用策略
+  keyStrategy            String   @default("sequential")
+  /// 单个 Key 余额低于该值 (EUR) 时预警 (规格 §71)
+  keyLowBalanceThreshold Decimal  @default(2.99) @db.Decimal(10, 2)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+enum RedeemCodeStatus {
+  UNUSED
+  LOCKED
+  PURCHASED
+  USED
+  DISABLED
+}
+
+enum OrderStatus {
+  PENDING
+  PURCHASING
+  PURCHASE_UNCERTAIN
+  PURCHASED
+  TRANSFERRING
+  TRANSFER_FAILED
+  COMPLETED
+  FAILED
+}
+
+/// 卡密 (规格 §14-§18, §34)
+model RedeemCode {
+  id        String                @id @default(cuid())
+  code      String                @unique
+  status    RedeemCodeStatus      @default(UNUSED)
+  expiresAt DateTime?
+  batchId   String?
+  remark    String?
+  createdAt DateTime              @default(now())
+  lockedAt  DateTime?
+  usedAt    DateTime?
+  orders    Order[]
+  sessions  NumberSearchSession[]
+
+  @@index([status])
+  @@index([batchId])
+}
+
+/// 订单 (规格 §32, §35)
+model Order {
+  id                 String      @id @default(cuid())
+  redeemCodeId       String
+  redeemCode         RedeemCode  @relation(fields: [redeemCodeId], references: [id], onDelete: Cascade)
+  msisdn             String
+  /// 购买时快照 (原则 9): 后续修改系统设置不影响历史订单
+  numberPrice        Decimal     @db.Decimal(10, 2)
+  initialBalance     Decimal     @db.Decimal(10, 2)
+  recipientEmail     String?
+  recipientAccountId String?
+  /// 用户访问令牌 (规格 §50: 不暴露数据库 ID)
+  accessToken        String      @unique
+  status             OrderStatus @default(PENDING)
+  purchaseResponse   Json?
+  transferResponse   Json?
+  errorCode          String?
+  errorMessage       String?
+  createdAt          DateTime    @default(now())
+  purchasedAt        DateTime?
+  completedAt        DateTime?
+  retryCount         Int         @default(0)
+  /// 购买时使用的 API Key (规格 §71): 转移/对账必须用同一个 key
+  apiKeyId           String?
+  apiKey             EsimApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  /// 官方实付成本 EUR (来自购买响应 total_price, 规格 §71)
+  costTotal          Decimal?    @db.Decimal(10, 2)
+  /// 成本构成明细 (JSON: 号码费用/增值税/预估合计等)
+  costBreakdown      Json?
+
+  @@index([status])
+  @@index([msisdn])
+  @@index([recipientEmail])
+}
+
+/// 号码搜索会话 (规格 §12-§13): 防止客户端篡改价格
+model NumberSearchSession {
+  id           String     @id @default(cuid())
+  redeemCodeId String
+  redeemCode   RedeemCode @relation(fields: [redeemCodeId], references: [id], onDelete: Cascade)
+  sessionToken String     @unique
+  msisdn       String
+  price        Decimal    @db.Decimal(10, 2)
+  createdAt    DateTime   @default(now())
+  expiresAt    DateTime
+
+  @@index([redeemCodeId, msisdn])
+}
+
+/// 审计日志 (规格 §38)
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String?
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([action])
+  @@index([createdAt])
+}
