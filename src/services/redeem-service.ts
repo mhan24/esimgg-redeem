@@ -1,6 +1,8 @@
 /**
  * 卡密验证服务 (规格 §20-§21)
  */
+import { assertRedemptionOpen } from "@/lib/site-settings";
+import { getSettings } from "./settings-service";
 import { prisma } from "@/lib/prisma";
 import { ApiError, forbidden, notFound } from "@/lib/http";
 import { serializeOrder, type SerializedOrder } from "@/lib/serialize";
@@ -30,7 +32,7 @@ export function normalizeCode(input: unknown): string {
   return input.trim().toUpperCase();
 }
 
-async function latestActiveOrder(codeId: string): Promise<Order | null> {
+export async function latestActiveOrder(codeId: string): Promise<Order | null> {
   return prisma.order.findFirst({
     where: {
       redeemCodeId: codeId,
@@ -60,6 +62,7 @@ export async function verifyCode(rawCode: string): Promise<VerifyResult> {
 
   switch (redeemCode.status) {
     case "UNUSED":
+      assertRedemptionOpen(await getSettings());
       return { kind: "READY", ...base };
 
     case "LOCKED": {
@@ -78,6 +81,7 @@ export async function verifyCode(rawCode: string): Promise<VerifyResult> {
         redeemCode.lockedAt &&
         redeemCode.lockedAt.getTime() < Date.now() - STALE_LOCK_MS
       ) {
+        assertRedemptionOpen(await getSettings());
         await prisma.redeemCode.updateMany({
           where: { id: redeemCode.id, status: "LOCKED" },
           data: { status: "UNUSED", lockedAt: null },

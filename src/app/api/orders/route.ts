@@ -1,8 +1,9 @@
 /**
  * POST /api/orders (规格 §23-§25)
  * 用户确认兑换: 锁卡密 -> 购买 -> 转移 (同步执行, 失败按状态机处理)
- * 转移接收方使用 esim.gg UserID (cm 开头), 映射 recipient_account_id
+ * 转移接收方支持 esim.gg UserID 或邮箱，推荐 UserID
  */
+import { latestActiveOrder } from "@/services/redeem-service";
 import { startRedemption } from "@/services/purchase-service";
 import { getRedeemSession } from "@/lib/redeem-session";
 import {
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
       throw new ApiError(400, "MSISDN_INVALID", "号码格式不正确");
     }
 
-    // 接收方: UserID (cm 开头) 优先; accountId 为兼容别名; email 仅后台手动重试使用
+    // 接收方: UserID (cm 开头) 优先; accountId 为兼容别名; 也支持邮箱，二选一
     const userid =
       normalizeUserid(body.userid) || normalizeUserid(body.accountId);
     if (userid) {
@@ -69,19 +70,30 @@ export async function POST(req: Request) {
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       throw new ApiError(400, "EMAIL_INVALID", "邮箱格式不正确");
     }
+    if (userid && email) {
+      throw new ApiError(400, "RECIPIENT_CONFLICT", "UserID 与邮箱只能填写其中一项");
+    }
     if (!userid && !email) {
-      throw new ApiError(400, "RECIPIENT_REQUIRED", "请填写接收 UserID");
+      throw new ApiError(400, "RECIPIENT_REQUIRED", "请填写接收 UserID 或邮箱");
     }
 
-    const order = await startRedemption({
-      codeId: session.codeId,
-      msisdn,
-      recipientAccountId: userid || undefined,
-      recipientEmail: email || undefined,
-    });
-
-    logger.info("兑换流程完成", { msisdn, status: order.status });
-    return jsonOk({ order: serializeOrder(order) });
+    try {
+      const order = await startRedemption({
+        codeId: session.codeId,
+        msisdn,
+        recipientAccountId: userid || undefined,
+        recipientEmail: email || undefined,
+      });
+      logger.info("兑换流程完成", { msisdn, status: order.status });
+      return jsonOk({ order: serializeOrder(order) });
+    } catch (err) {
+      // A purchase may already have succeeded. Return its status link on errors
+      // and repeated submissions instead of leaving the customer on checkout.
+      const response = jsonError(err);
+      const order = await latestActiveOrder(session.codeId).catch(() => null);
+      if (!order) return response;
+      return Response.json({ ...await response.json(), order: serializeOrder(order) }, { status: response.status });
+    }
   } catch (err) {
     return jsonError(err);
   }

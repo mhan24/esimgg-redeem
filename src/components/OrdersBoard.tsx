@@ -1,5 +1,7 @@
 "use client";
 
+import { WalletCostEstimate } from "@/components/WalletCostEstimate";
+
 /**
  * 订单面板 (规格 §39/§40) — 订单管理 / 异常订单共用
  */
@@ -402,12 +404,16 @@ export function OrdersBoard({ mode }: { mode: "all" | "exceptions" }) {
               <dt className="text-muted-foreground">API Key</dt>
               <dd>{detail.apiKeyName ?? "—"}</dd>
             </div>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <dt className="sr-only">钱包成本估算</dt>
+              <dd><WalletCostEstimate numberPrice={detail.numberPrice} initialBalance={detail.initialBalance} /></dd>
+            </div>
             {detail.costBreakdown && (
               <div className="sm:col-span-2 lg:col-span-3">
                 <dt className="text-muted-foreground">成本构成（官方实付）</dt>
                 <dd className="mt-1 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
                   <div className="flex justify-between">
-                    <span>eSIM 号码费用</span>
+                    <span>选号附加费用（API 返回）</span>
                     <span>
                       {detail.costBreakdown.numberPrice === null
                         ? "—"
@@ -415,7 +421,7 @@ export function OrdersBoard({ mode }: { mode: "all" | "exceptions" }) {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>初始余额</span>
+                    <span>初始余额（订单设置）</span>
                     <span>€{Number(detail.initialBalance).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
@@ -429,19 +435,12 @@ export function OrdersBoard({ mode }: { mode: "all" | "exceptions" }) {
                   <div className="mt-1 flex justify-between border-t border-border pt-1 font-medium text-foreground">
                     <span>实付合计</span>
                     <span>
-                      €
-                      {(
-                        detail.costBreakdown.total ??
-                        Number(detail.costTotal ?? 0)
-                      ).toFixed(2)}
+                      {detail.costBreakdown.total !== null
+                        ? `€${detail.costBreakdown.total.toFixed(2)}`
+                        : detail.costTotal !== null ? `€${Number(detail.costTotal).toFixed(2)}` : "待核实"}
                     </span>
                   </div>
-                  {detail.costBreakdown.estimatedTotal && (
-                    <div className="mt-1 flex justify-between text-muted-foreground">
-                      <span>预估合计</span>
-                      <span>€{detail.costBreakdown.estimatedTotal}</span>
-                    </div>
-                  )}
+
                 </dd>
               </div>
             )}

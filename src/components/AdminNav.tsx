@@ -1,5 +1,6 @@
 "use client";
 
+import { usePublicSiteSettings } from "@/components/PublicSiteNotice";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -50,6 +51,7 @@ function isCurrent(pathname: string, href: string) {
 }
 
 export function AdminNav({ username }: { username: string }) {
+  const settings = usePublicSiteSettings();
   const pathname = usePathname();
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
@@ -73,7 +75,7 @@ export function AdminNav({ username }: { username: string }) {
             <Wifi aria-hidden className="size-5" />
           </span>
           <span className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <span className="block truncate text-sm font-semibold tracking-tight text-sidebar-foreground">esim.gg</span>
+            <span className="block truncate text-sm font-semibold tracking-tight text-sidebar-foreground">{settings?.siteName ?? "号码兑换"}</span>
             <span className="mt-0.5 block truncate text-xs text-sidebar-foreground/65">管理控制台</span>
           </span>
         </Link>

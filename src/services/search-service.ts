@@ -5,6 +5,7 @@
  * - 服务端二次过滤, 不信任 API 异常返回 (原则 6/7)
  * - 结果落 NumberSearchSession (5 分钟有效), 下单时服务端取真实价格 (规格 §12/§13)
  */
+import { assertRedemptionOpen } from "@/lib/site-settings";
 import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { getSelectionSettings } from "./settings-service";
@@ -23,7 +24,7 @@ export class SelectionClosedError extends Error {}
 /** 当前是否开放选号 (模式 D 关闭) */
 export async function isSelectionOpen(): Promise<boolean> {
   const s = await getSelectionSettings();
-  return s.allowFreeNumbers || s.allowPaidNumbers;
+  return !s.redemptionPaused && (s.allowFreeNumbers || s.allowPaidNumbers);
 }
 
 /**
@@ -55,6 +56,7 @@ export async function searchNumbersForCode(params: {
   search: string;
 }): Promise<{ numbers: NumberSearchResult[]; expiresAt: Date }> {
   const settings = await getSelectionSettings();
+  assertRedemptionOpen(settings);
   if (!settings.allowFreeNumbers && !settings.allowPaidNumbers) {
     throw badRequest("SELECTION_CLOSED", "当前暂未开放号码兑换。");
   }

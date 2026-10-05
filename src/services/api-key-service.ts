@@ -222,9 +222,9 @@ export async function markKeyUsed(id: string): Promise<void> {
 
 /** 刷新并回写某个 Key 的余额 (后台「检测余额」用) */
 export async function refreshKeyBalance(id: string): Promise<{ balance: number; currency: string }> {
-  const key = await resolveKey(id);
-  const client = clientForKey(key);
   try {
+    const key = await resolveKey(id);
+    const client = clientForKey(key);
     const wallet = await client.getWalletBalance("eur");
     await prisma.esimApiKey.update({
       where: { id },
@@ -236,10 +236,9 @@ export async function refreshKeyBalance(id: string): Promise<{ balance: number; 
     });
     return { balance: wallet.balance, currency: wallet.currency };
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
     await prisma.esimApiKey.update({
       where: { id },
-      data: { lastError: message.slice(0, 200), lastBalanceAt: new Date() },
+      data: { lastError: "余额检测失败，请检查 Key 状态和服务器网络" },
     });
     throw err;
   }

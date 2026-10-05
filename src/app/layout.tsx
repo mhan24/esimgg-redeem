@@ -1,3 +1,4 @@
+import { getSettings } from "@/services/settings-service";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "next-themes";
@@ -9,13 +10,15 @@ import { Geist } from "next/font/google";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 
-export const metadata: Metadata = {
-  title: {
-    default: "esim.gg 号码兑换",
-    template: "%s | esim.gg 号码兑换",
-  },
-  description: "输入兑换码，选择号码并转移至你的 esim.gg 账户",
-};
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName } = await getSettings();
+  return {
+    title: { default: siteName, template: `%s | ${siteName}` },
+    description: "输入兑换码，选择号码并转移至你的 esim.gg 账户",
+  };
+}
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

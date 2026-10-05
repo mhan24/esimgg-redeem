@@ -1,3 +1,5 @@
+"use client";
+import { PublicSiteNotice, PublicDisclaimer, usePublicSiteSettings } from "@/components/PublicSiteNotice";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { LockKeyhole, Wifi } from "lucide-react";
@@ -9,6 +11,8 @@ export function PublicShell({
   children: ReactNode;
   mode?: "public" | "admin";
 }) {
+  const settings = usePublicSiteSettings();
+  const siteName = settings?.siteName ?? "号码兑换";
   return (
     <div className="relative flex min-h-svh flex-1 flex-col overflow-hidden bg-background">
       <div
@@ -25,7 +29,7 @@ export function PublicShell({
           </span>
           <span>
             <span className="block text-sm font-semibold tracking-tight text-foreground">
-              esim.gg
+              {siteName}
             </span>
             <span className="block text-xs text-muted-foreground">
               {mode === "admin" ? "管理后台" : "号码兑换"}
@@ -39,6 +43,7 @@ export function PublicShell({
       </header>
 
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 pb-8 pt-4 sm:px-6 sm:pb-12">
+        {mode === "public" && <PublicSiteNotice />}
         {children}
       </div>
 
@@ -49,8 +54,9 @@ export function PublicShell({
               ? "仅限授权管理员访问"
               : "兑换码与订单链接仅供本人使用"}
           </span>
-          <span>esim.gg · {mode === "admin" ? "管理后台" : "号码兑换"}</span>
+          <span>{siteName} · {mode === "admin" ? "管理后台" : "号码兑换"}</span>
         </div>
+        {mode === "public" && <PublicDisclaimer />}
       </footer>
     </div>
   );

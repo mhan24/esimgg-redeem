@@ -33,6 +33,7 @@ model EsimApiKey {
   lastUsedAt    DateTime?
   /// 最近一次查到的 EUR 余额 (展示与低余额预警)
   lastBalance   Decimal?  @db.Decimal(10, 2)
+  balanceCheckStartedAt DateTime?
   lastBalanceAt DateTime?
   lastError     String?
   createdAt     DateTime  @default(now())
@@ -45,6 +46,13 @@ model EsimApiKey {
 /// 系统设置单例 (规格 §37)
 model SystemSetting {
   id                     Int      @id @default(1)
+  redemptionPaused       Boolean  @default(false)
+  pauseReason            String   @default("")
+  purchaseUrl            String   @default("https://shop.setup0.de/products/esimgg")
+  disclaimer             String   @default("本站是使用 https://github.com/esimgg/api 进行的二次开发，通过搜寻号码、订购号码、转移线路所有权三项功能实现的自助转移，兑换号码均为 esim.gg 官方资源，余额为站点普通用户钱包。和官方购买并无二异（仅获得部分功能白名单），如不信任可以去官方自行购买，官方地址 https://esim.gg，优惠码可以用 SETUP，会优惠 0.4 欧元。")
+  telegramEnabled        Boolean  @default(false)
+  encryptedTelegramToken String?
+  telegramChatId         String?
   siteName               String   @default("esim.gg 号码兑换")
   /// AES-256-GCM 加密后的 esim.gg API Key (规格 §6), 绝不明文返回
   /// 多 key 场景下仅作兜底 (规格 §71): 新表无启用 key 时回退使用

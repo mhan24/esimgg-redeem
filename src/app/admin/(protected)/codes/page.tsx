@@ -1,4 +1,5 @@
 "use client";
+import { BalanceCoverage } from "@/components/BalanceCoverage";
 
 /**
  * 卡密管理页 (规格 §14)
@@ -50,7 +51,12 @@ export default function AdminCodesPage() {
   const [notice, setNotice] = useState<string | null>(null);
 
   // 生成表单
-  const [count, setCount] = useState("100");
+  const [recommendedCount, setRecommendedCount] = useState(1);
+  const [manualCount, setManualCount] = useState<string | null>(null);
+  const count = manualCount ?? String(recommendedCount);
+  const onRecommendation = useCallback((value: number) => {
+    setRecommendedCount(Math.max(1, Math.min(1000, value)));
+  }, []);
   const [prefix, setPrefix] = useState("ESIM");
   const [expiresInDays, setExpiresInDays] = useState("");
   const [remark, setRemark] = useState("");
@@ -117,7 +123,7 @@ export default function AdminCodesPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          count: Number(count),
+          count: Math.max(1, Number(count)),
           prefix,
           expiresInDays: expiresInDays ? Number(expiresInDays) : null,
           remark,
@@ -128,6 +134,7 @@ export default function AdminCodesPage() {
         setError(data.message ?? "生成失败");
         return;
       }
+      setManualCount(null);
       setGenerated(data.codes);
       setNotice(`已生成 ${data.count} 个卡密（批次 ${data.batchId}）`);
       await load();
@@ -183,6 +190,8 @@ export default function AdminCodesPage() {
         }
       />
 
+      <BalanceCoverage revision={`${total}:${notice}:${generating}`} onRecommendation={onRecommendation} />
+
       <Card>
         <h2 className="mb-3 text-sm font-semibold text-foreground">生成卡密</h2>
         <form onSubmit={onGenerate} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -192,8 +201,11 @@ export default function AdminCodesPage() {
               id="count"
               inputMode="numeric"
               value={count}
-              onChange={(e) => setCount(e.target.value.replace(/\D/g, ""))}
+              onChange={(e) => setManualCount(e.target.value.replace(/\D/g, ""))}
+              onBlur={() => setManualCount(value => value === null ? null : String(Math.max(1, Number(value))))}
+              aria-describedby="count-hint"
             />
+            <p id="count-hint" className="mt-2 text-xs text-muted-foreground">按余额推荐数量预填，最低 1 张，单次最多 1000 张，可手动修改。</p>
           </div>
           <div>
             <Label htmlFor="prefix">前缀</Label>

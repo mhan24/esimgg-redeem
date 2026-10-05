@@ -69,7 +69,7 @@ export function transferErrorMessage(err: EsimApiError | null): FriendlyError {
     return {
       code: "TRANSFER_RECIPIENT_INVALID",
       message:
-        "号码已经购买成功，但无法转移至该 UserID。请确认 UserID 正确且已注册 esim.gg，然后重新提交。不会重复购买号码。",
+        "号码已经购买成功，但无法转移至该接收账号。请确认 UserID 或邮箱正确，且接收账号已注册 esim.gg，然后重新提交。不会重复购买号码。",
     };
   }
   if (err.kind === "uncertain") {

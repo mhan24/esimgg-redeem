@@ -7,6 +7,7 @@
  * - 转移失败绝不重新购买, 只允许换邮箱/账户 ID 重试 (原则 3)
  * - 成功: Order -> COMPLETED, RedeemCode -> USED
  */
+import { notifyCodeUsed } from "./telegram-service";
 import { prisma } from "@/lib/prisma";
 import { EsimApiError } from "@/lib/esim/errors";
 import { transferErrorMessage } from "./error-messages";
@@ -31,7 +32,7 @@ async function completeOrder(
   transferResponse: unknown,
 ): Promise<Order> {
   const now = new Date();
-  const [updated] = await prisma.$transaction([
+  const [updated, usedCode] = await prisma.$transaction([
     prisma.order.update({
       where: { id: order.id },
       data: {
@@ -50,6 +51,7 @@ async function completeOrder(
       data: { status: "USED", usedAt: now },
     }),
   ]);
+  if (usedCode.count > 0) await notifyCodeUsed(updated);
   return updated;
 }
 
@@ -78,12 +80,10 @@ export async function transferOrder(
     throw conflict("ORDER_NOT_TRANSFERABLE", "当前订单状态不能执行转移");
   }
 
-  const recipientEmail = (opts.recipientEmail ?? order.recipientEmail ?? "").trim();
-  const recipientAccountId = (
-    opts.recipientAccountId ??
-    order.recipientAccountId ??
-    ""
-  ).trim();
+  // 指定新接收方时整体替换，避免切换 UserID/邮箱后混入订单上的旧值。
+  const replacingRecipient = opts.recipientEmail !== undefined || opts.recipientAccountId !== undefined;
+  const recipientEmail = (replacingRecipient ? opts.recipientEmail ?? "" : order.recipientEmail ?? "").trim();
+  const recipientAccountId = (replacingRecipient ? opts.recipientAccountId ?? "" : order.recipientAccountId ?? "").trim();
   if (!recipientEmail && !recipientAccountId) {
     throw badRequest("RECIPIENT_REQUIRED", "请填写接收邮箱或账户 ID");
   }
@@ -102,7 +102,10 @@ export async function transferOrder(
     stillOwned = check.value;
   } catch (e) {
     // 配置类错误 (购买时使用的 Key 已被删除等) 原样抛出, 便于管理员定位
-    if (e instanceof ApiError) throw e;
+    if (e instanceof ApiError) {
+      await markTransferFailed(orderId, null);
+      throw e;
+    }
     const err = e instanceof EsimApiError ? e : null;
     await markTransferFailed(orderId, err);
     throw new ApiError(

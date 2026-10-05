@@ -15,6 +15,9 @@ import {
   PageHeading,
   Spinner,
 } from "@/components/ui";
+import { WalletCostEstimate } from "@/components/WalletCostEstimate";
+import { SiteOperationsSettings } from "@/components/SiteOperationsSettings";
+import { TelegramSettings } from "@/components/TelegramSettings";
 import { ApiKeyManager } from "@/components/ApiKeyManager";
 import { Switch } from "@/components/ui/switch";
 
@@ -113,6 +116,8 @@ export default function AdminSettingsPage() {
         setError(json.message ?? "保存失败");
         return;
       }
+      window.dispatchEvent(new Event("site-settings-updated"));
+      router.refresh();
       setNotice("设置已保存");
       await reload();
     } catch {
@@ -140,6 +145,8 @@ export default function AdminSettingsPage() {
       {notice && <Alert kind="success">{notice}</Alert>}
 
       <ApiKeyManager />
+      <SiteOperationsSettings />
+      <TelegramSettings />
 
       <Card>
         <h2 className="mb-3 text-sm font-semibold text-foreground">选号设置</h2>
@@ -208,6 +215,7 @@ export default function AdminSettingsPage() {
               <option value="asia">Asia</option>
             </select>
           </div>
+          <WalletCostEstimate numberPrice="0.00" initialBalance={initialBalance} />
           <Button type="submit" loading={saving}>
             保存
           </Button>

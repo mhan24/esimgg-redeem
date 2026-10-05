@@ -16,7 +16,7 @@ export function isValidUserid(value: string): boolean {
   return /^[A-Za-z0-9_-]{4,64}$/.test(value);
 }
 
-/** 邮箱格式 (后台手动重试时仍可选使用) */
+/** 邮箱格式 (兑换及转移重试可使用) */
 export function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }

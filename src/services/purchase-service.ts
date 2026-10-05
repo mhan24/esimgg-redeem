@@ -12,10 +12,12 @@
  * - 购买超时/不确定响应必须先 /line/all 对账, 绝不自动重买 (原则 4)
  * - 确认购买成功后退不回 UNUSED (原则 2)
  */
+import { assertRedemptionOpen } from "@/lib/site-settings";
 import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { transferOrder } from "./transfer-service";
 import { purchaseErrorMessage } from "./error-messages";
+import { refreshKeyBalance } from "./api-key-service";
 import { buildCostBreakdown } from "@/lib/esim/cost";
 import { EsimApiError } from "@/lib/esim/errors";
 import {
@@ -46,22 +48,25 @@ async function createOrderTransactional(
   params: StartRedemptionParams,
 ): Promise<Order> {
   return prisma.$transaction(async (tx) => {
-    // 1. 原子锁卡密: 仅 UNUSED 可锁 (规格 §17, 禁止 SELECT-then-UPDATE)
+    // Serialize order admission with updates to the pause switch.
+    await tx.$queryRaw`SELECT id FROM "SystemSetting" WHERE id = 1 FOR UPDATE`;
+    // 1. 系统设置检查 (规格 §25)
+    const settings: SystemSetting | null = await tx.systemSetting.findUnique({
+      where: { id: 1 },
+    });
+    if (!settings) throw serverError("系统设置缺失");
+    assertRedemptionOpen(settings);
+    if (!settings.allowFreeNumbers && !settings.allowPaidNumbers) {
+      throw badRequest("SELECTION_CLOSED", "当前暂未开放号码兑换。");
+    }
+
+    // 2. 原子锁卡密: 仅 UNUSED 可锁 (规格 §17, 禁止 SELECT-then-UPDATE)
     const lock = await tx.redeemCode.updateMany({
       where: { id: params.codeId, status: "UNUSED" },
       data: { status: "LOCKED", lockedAt: new Date() },
     });
     if (lock.count === 0) {
       throw conflict("CODE_NOT_AVAILABLE", "卡密状态不允许兑换或已被使用");
-    }
-
-    // 2. 系统设置检查 (规格 §25)
-    const settings: SystemSetting | null = await tx.systemSetting.findUnique({
-      where: { id: 1 },
-    });
-    if (!settings) throw serverError("系统设置缺失");
-    if (!settings.allowFreeNumbers && !settings.allowPaidNumbers) {
-      throw badRequest("SELECTION_CLOSED", "当前暂未开放号码兑换。");
     }
 
     // 3. Search Session 检查 (规格 §12/§13)
@@ -283,6 +288,11 @@ export async function executePurchase(order: Order): Promise<Order> {
   }
 
   await markPurchased(order, purchaseRaw, usedKey);
+
+  // Wallet balance changes on purchase; refresh the actual key, with failures isolated.
+  if (usedKey && !usedKey.legacy) {
+    try { await refreshKeyBalance(usedKey.id); } catch { /* Periodic monitor retries. */ }
+  }
 
   // 购买成功 -> 转移 (规格 §60)
   const fresh = await prisma.order.findUnique({ where: { id: order.id } });

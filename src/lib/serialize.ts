@@ -1,6 +1,8 @@
 /**
  * 订单序列化 (规格 §50: 不向用户暴露数据库 ID / 内部 API Response)
  */
+import { transferErrorMessage } from "@/services/error-messages";
+import { EsimApiError } from "@/lib/esim/errors";
 import type { Order } from "@prisma/client";
 
 export interface SerializedOrder {
@@ -19,6 +21,13 @@ export interface SerializedOrder {
 }
 
 export function serializeOrder(order: Order): SerializedOrder {
+  const transferFailure = order.status === "TRANSFER_FAILED"
+    ? transferErrorMessage(new EsimApiError({
+        message: order.errorMessage ?? "转移失败",
+        errorCode: order.errorCode ?? undefined,
+        kind: /timeout|network|uncertain/i.test(`${order.errorCode} ${order.errorMessage}`) ? "uncertain" : "definitive",
+      }))
+    : null;
   return {
     token: order.accessToken,
     msisdn: order.msisdn,
@@ -27,8 +36,8 @@ export function serializeOrder(order: Order): SerializedOrder {
     recipientEmail: order.recipientEmail,
     recipientAccountId: order.recipientAccountId,
     status: order.status,
-    errorCode: order.errorCode,
-    errorMessage: order.errorMessage,
+    errorCode: transferFailure?.code ?? order.errorCode,
+    errorMessage: transferFailure?.message ?? order.errorMessage,
     createdAt: order.createdAt.toISOString(),
     purchasedAt: order.purchasedAt?.toISOString() ?? null,
     completedAt: order.completedAt?.toISOString() ?? null,

@@ -3,6 +3,7 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+  estimateWalletCost,
   buildCostBreakdown,
   formatCost,
   parsePurchaseCost,
@@ -69,7 +70,7 @@ describe("parsePurchaseCost (规格 §71)", () => {
 });
 
 describe("buildCostBreakdown (规格 §71)", () => {
-  it("附带预估合计 (订单快照 numberPrice + initialBalance)", () => {
+  it("附带钱包优惠后的预估合计", () => {
     const breakdown = buildCostBreakdown(
       { total_price: 2.99, number_price: 0, vat_amount: 0 },
       { numberPrice: "0.00", initialBalance: "0.50" },
@@ -79,7 +80,7 @@ describe("buildCostBreakdown (规格 §71)", () => {
       numberPrice: 0,
       vatAmount: 0,
       currency: "EUR",
-      estimatedTotal: "0.50",
+      estimatedTotal: "2.99",
       source: "purchase_response",
     });
   });
@@ -106,3 +107,10 @@ describe("formatCost", () => {
     expect(formatCost("abc")).toBe("—");
   });
 });
+
+ it("wallet estimate excludes card fees and applies confirmed coupon", () => {
+   expect(estimateWalletCost("0.00", "0.50")).toMatchObject({ total: "2.99", paymentFee: "0.00", couponDiscount: "0.50" });
+   expect(estimateWalletCost("1.00", "0.50")?.total).toBe("3.99");
+   expect(estimateWalletCost("bad", "0.50")).toBeNull();
+   expect(buildCostBreakdown({ total_price: 3.10 }, { numberPrice: "0", initialBalance: "0.50" })?.total).toBe(3.10);
+ });

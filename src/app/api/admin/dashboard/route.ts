@@ -2,6 +2,7 @@
  * GET /api/admin/dashboard (规格 §5/§71)
  * 新增: 官方实付成本统计 (costTotal) 与 API Key 余额/低余额预警
  */
+import { estimateWalletCost } from "@/lib/esim/cost";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { jsonError, jsonOk } from "@/lib/http";
@@ -49,7 +50,8 @@ export async function GET() {
       prisma.order.count({ where: { status: "TRANSFER_FAILED" } }),
       prisma.order.count({ where: { status: "COMPLETED" } }),
       prisma.order.aggregate({
-        _sum: { numberPrice: true },
+        _sum: { numberPrice: true, initialBalance: true },
+        _count: { _all: true },
         where: { purchasedAt: { not: null } },
       }),
       prisma.order.aggregate({
@@ -110,10 +112,11 @@ export async function GET() {
         /** 官方实付成本合计 (规格 §71) */
         actualCost: costSum._sum.costTotal?.toString() ?? "0.00",
         actualCostOrders: costCount,
-        /** 预估合计 (号码价格 + 初始余额), 用于对比 */
+        /** 当前钱包优惠口径估算，实际统计仍以 costTotal 为准 */
         estimatedCost: (
           Number(purchaseSum._sum.numberPrice ?? 0) +
-          Number(initialSum._sum.initialBalance ?? 0)
+          Number(purchaseSum._sum.initialBalance ?? 0) +
+          Number(estimateWalletCost("0", "0")!.total) * purchaseSum._count._all
         ).toFixed(2),
       },
       keys: keys.map((k) => ({

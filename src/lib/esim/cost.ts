@@ -21,7 +21,7 @@ export interface PurchaseCost {
 }
 
 export interface CostBreakdown extends PurchaseCost {
-  /** 预估合计 (订单快照 numberPrice + initialBalance), 用于对比 */
+  /** 按钱包基础费用与当前优惠估算，仅用于对比 */
   estimatedTotal: string | null;
   source: "purchase_response";
 }
@@ -73,7 +73,7 @@ export function buildCostBreakdown(
   return {
     ...cost,
     estimatedTotal: estimated
-      ? (Number(estimated.numberPrice) + Number(estimated.initialBalance)).toFixed(2)
+      ? estimateWalletCost(estimated.numberPrice, estimated.initialBalance)?.total ?? null
       : null,
     source: "purchase_response",
   };
@@ -85,4 +85,19 @@ export function formatCost(value: number | string | null | undefined): string {
   const n = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(n)) return "—";
   return `€${n.toFixed(2)}`;
+}
+
+/** Confirmed wallet tariff, an estimate only; API total_price remains authoritative. */
+export function estimateWalletCost(numberPrice: string, initialBalance: string) {
+  const numberCents = Math.round(Number(numberPrice) * 100);
+  const balanceCents = Math.round(Number(initialBalance) * 100);
+  if (!Number.isFinite(numberCents) || !Number.isFinite(balanceCents) || numberCents < 0 || balanceCents < 0) return null;
+  return {
+    basePrice: "2.99",
+    couponDiscount: "0.50",
+    numberPrice: (numberCents / 100).toFixed(2),
+    initialBalance: (balanceCents / 100).toFixed(2),
+    paymentFee: "0.00",
+    total: ((299 - 50 + numberCents + balanceCents) / 100).toFixed(2),
+  };
 }

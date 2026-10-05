@@ -1,6 +1,6 @@
 /**
  * POST /api/orders/:token/retry-transfer (规格 §31/§48)
- * 用户修改接收 UserID 后重新转移; 绝不重新购买 (原则 3)
+ * 用户修改接收 UserID 或邮箱后重新转移; 绝不重新购买 (原则 3)
  */
 import { prisma } from "@/lib/prisma";
 import { transferOrder } from "@/services/transfer-service";
@@ -48,7 +48,7 @@ export async function POST(
       throw new ApiError(400, "BAD_REQUEST", "请求格式错误");
     }
 
-    // 接收方: UserID 优先 (accountId 兼容), 邮箱仅后台使用
+    // 接收方: UserID 优先 (accountId 兼容), 也支持邮箱，二选一
     const userid =
       normalizeUserid(body.userid) || normalizeUserid(body.accountId);
     if (userid) {
@@ -67,8 +67,11 @@ export async function POST(
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       throw new ApiError(400, "EMAIL_INVALID", "邮箱格式不正确");
     }
+    if (userid && email) {
+      throw new ApiError(400, "RECIPIENT_CONFLICT", "UserID 与邮箱只能填写其中一项");
+    }
     if (!userid && !email) {
-      throw new ApiError(400, "RECIPIENT_REQUIRED", "请填写接收 UserID");
+      throw new ApiError(400, "RECIPIENT_REQUIRED", "请填写接收 UserID 或邮箱");
     }
 
     const updated = await transferOrder(order.id, {

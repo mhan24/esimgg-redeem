@@ -9,6 +9,8 @@ import { serverError } from "@/lib/http";
 import type { SystemSetting } from "@prisma/client";
 
 export interface SelectionSettings {
+  redemptionPaused: boolean;
+  pauseReason: string;
   initialBalance: string; // "0.05"
   allowFreeNumbers: boolean;
   allowPaidNumbers: boolean;
@@ -26,6 +28,8 @@ export async function getSettings(): Promise<SystemSetting> {
 export async function getSelectionSettings(): Promise<SelectionSettings> {
   const s = await getSettings();
   return {
+    redemptionPaused: s.redemptionPaused,
+    pauseReason: s.pauseReason,
     initialBalance: s.initialBalance.toString(),
     allowFreeNumbers: s.allowFreeNumbers,
     allowPaidNumbers: s.allowPaidNumbers,

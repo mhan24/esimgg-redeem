@@ -91,6 +91,24 @@ export function ApiKeyManager() {
       .finally(() => setLoading(false));
   }, [router]);
 
+  // Refresh only the list, preserving unsaved strategy/threshold edits.
+  useEffect(() => {
+    let active = true;
+    let pending = false;
+    const timer = setInterval(async () => {
+      if (document.hidden || pending) return;
+      pending = true;
+      try {
+        const res = await fetch("/api/admin/api-keys", { cache: "no-store" });
+        if (!res.ok) return;
+        const latest = await res.json();
+        if (active) setData(latest);
+      } catch { /* Keep the previous snapshot on network failure. */ }
+      finally { pending = false; }
+    }, 30_000);
+    return () => { active = false; clearInterval(timer); };
+  }, []);
+
   function resetMessages() {
     setError(null);
     setNotice(null);
@@ -238,6 +256,7 @@ export function ApiKeyManager() {
         <h2 className="mb-3 text-sm font-semibold text-foreground">
           esim.gg API Key 管理
         </h2>
+        <p className="mb-3 text-xs text-muted-foreground">已启用 Key 的余额由服务器每 5 分钟检测，页面每 30 秒更新显示。检测失败会保留上次成功余额与时间。</p>
         <div className="mb-3 rounded-xl bg-muted/50 px-4 py-3 text-xs text-muted-foreground">
           支持多个 Key。购买时按策略选用，余额不足自动切换到下一个 Key；
           同一个订单的购买与转移固定使用同一个 Key。
@@ -333,6 +352,10 @@ export function ApiKeyManager() {
                             {low && " ⚠"}
                           </span>
                         )}
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {k.lastBalanceAt ? `更新于 ${new Date(k.lastBalanceAt).toLocaleString("zh-CN")}` : "尚无成功检测记录"}
+                        </p>
+                        {k.lastError && <p className="mt-1 text-xs text-destructive">检测失败，余额可能已过期</p>}
                       </td>
                       <td className="py-2.5 pr-3">
                         <span

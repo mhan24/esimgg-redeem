@@ -1,4 +1,5 @@
 "use client";
+import { BalanceCoverage } from "@/components/BalanceCoverage";
 
 /**
  * Dashboard (规格 §5)
@@ -135,10 +136,12 @@ export default function AdminDashboard() {
         }
       />
 
+      <BalanceCoverage />
+
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm text-muted-foreground">esim.gg Wallet 余额</p>
+            <p className="text-sm text-muted-foreground">当前选用 Key 钱包余额</p>
             {data.wallet ? (
               <p className="mt-1 text-2xl font-bold text-foreground">
                 €{data.wallet.balance.toFixed(2)}

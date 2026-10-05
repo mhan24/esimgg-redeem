@@ -46,7 +46,7 @@ export function OrderView({ token }: { token: string }) {
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [userid, setUserid] = useState("");
+  const [recipient, setRecipient] = useState("");
   const [retrying, setRetrying] = useState(false);
   const load = useCallback(async () => {
     try {
@@ -87,10 +87,11 @@ export function OrderView({ token }: { token: string }) {
       const res = await fetch(`/api/orders/${token}/retry-transfer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userid: userid.trim() }),
+        body: JSON.stringify(recipient.includes("@") ? { email: recipient.trim() } : { userid: recipient.trim() }),
       });
       const data = await res.json();
       if (!res.ok) {
+        await load();
         setError(data.message ?? "重新转移失败，请稍后再试");
         return;
       }
@@ -172,38 +173,39 @@ export function OrderView({ token }: { token: string }) {
 
           {transferFailed && (
             <div className="space-y-4">
-              <h1 className="text-xl font-bold text-foreground">等待重新转移</h1>
-              <Alert kind="warning">
+              <h1 className="text-xl font-bold text-foreground">号码已购买，但转移失败</h1>
+              <Alert kind="error" title="请检查接收账号后重新转移">
                 <p>
                   号码：
                   <span className="font-code">{formatMsisdn(order.msisdn)}</span>
                 </p>
                 <p>状态：号码购买成功，等待转移</p>
-                <p>转移失败：{order.errorCode ?? "未知错误"}</p>
+                <p>{order.errorMessage ?? "号码转移失败，请核对接收账号后重试，或联系管理员。"}</p>
               </Alert>
               <p className="text-sm text-muted-foreground">
-                请确认新的接收 UserID 正确，然后重新提交。
+                请确认接收 UserID 或邮箱正确，并已注册 esim.gg，然后在下方重新转移。
                 系统不会重复购买号码。
               </p>
               <form onSubmit={onRetry} className="space-y-3">
                 <div>
-                  <Label htmlFor="retry-userid">新的 esim.gg UserID</Label>
+                  <Label htmlFor="retry-userid">新的 esim.gg UserID 或邮箱</Label>
                   <Input
                     id="retry-userid"
                     autoComplete="off"
                     spellCheck={false}
-                    placeholder="cm 开头的 UserID"
+                    placeholder="UserID（推荐）或 esim.gg 账户邮箱"
                     className="font-code"
-                    value={userid}
-                    onChange={(e) => setUserid(e.target.value.trim())}
+                    value={recipient}
+                    onChange={(e) => setRecipient(e.target.value.trim())}
                   />
                 </div>
+                <p className="text-xs text-muted-foreground">推荐使用 UserID，可更准确地定位接收账号；也支持使用账户邮箱。</p>
                 <UseridGuide />
                 {error && <Alert kind="error">{error}</Alert>}
                 <Button
                   type="submit"
                   loading={retrying}
-                  disabled={!userid.trim()}
+                  disabled={!recipient.trim()}
                   className="w-full"
                 >
                   重新转移
@@ -232,7 +234,7 @@ export function OrderView({ token }: { token: string }) {
             <div className="space-y-4">
               <h1 className="text-xl font-bold text-foreground">正在处理</h1>
               <Alert kind="info">
-                号码购买成功，正在转移至你的 esim.gg 账户，请稍候…
+                {order.status === "PENDING" || order.status === "PURCHASING" ? "订单已受理，正在购买号码，请稍候。请勿再次提交兑换。" : "号码购买成功，正在转移至你的 esim.gg 账户，请稍候。"}
               </Alert>
               <p className="text-sm text-muted-foreground">
                 号码：<span className="font-code">{formatMsisdn(order.msisdn)}</span>

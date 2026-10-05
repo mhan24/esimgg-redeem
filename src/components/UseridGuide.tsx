@@ -26,7 +26,7 @@ export function UseridGuide() {
       </ol>
 
       <p className="mb-1.5 mt-3 font-semibold text-foreground">
-        为什么要用 UserID？
+        为什么推荐 UserID？
       </p>
       <ol className="list-decimal space-y-0.5 pl-4">
         <li>证明已经注册了账号</li>
