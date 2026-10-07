@@ -5,8 +5,8 @@
  */
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, ShieldCheck, Sparkles } from "lucide-react";
-import { Alert, Button, Card, Input, Label, Steps } from "@/components/ui";
+import { ArrowRight } from "lucide-react";
+import { Alert, Button, Card, Input, Label } from "@/components/ui";
 import { Turnstile } from "@/components/Turnstile";
 import { useTurnstile } from "@/components/TurnstileProvider";
 import { PublicShell } from "@/components/PublicShell";
@@ -72,57 +72,13 @@ export default function HomePage() {
 
   return (
     <PublicShell>
-      <main className="grid w-full max-w-5xl items-center gap-8 lg:grid-cols-[minmax(0,1fr)_27rem] lg:gap-14">
-        <section className="mx-auto w-full max-w-xl text-center lg:mx-0 lg:text-left">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary">
-            <Sparkles aria-hidden className="size-3.5" />
-            为你的下一张 eSIM 挑个号码
+      <main className="w-full max-w-md">
+        <Card className="w-full gap-6 rounded-xl p-6 shadow-sm sm:p-8">
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">eSIM 号码兑换</p>
+            <h1 className="text-2xl font-semibold tracking-tight">输入卡密</h1>
+            <p className="text-sm text-muted-foreground">兑换号码，或查看已有订单。</p>
           </div>
-          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-[2.8rem]">
-            选一个喜欢的号码，
-            <span className="block text-primary">几步完成兑换。</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-muted-foreground lg:mx-0 sm:text-base">
-            输入兑换码，搜索可用号码，再把号码转移到你的 esim.gg 账户。
-            整个流程会显示清晰的价格与订单状态。
-          </p>
-          <div className="mt-7 grid gap-3 text-left sm:grid-cols-2 lg:max-w-lg">
-            <div className="flex gap-3 rounded-xl border border-border/70 bg-card/75 p-4 shadow-xs">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Check aria-hidden className="size-4" />
-              </span>
-              <div>
-                <p className="text-sm font-medium text-foreground">先看号码和价格</p>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">确认后才会提交购买</p>
-              </div>
-            </div>
-            <div className="flex gap-3 rounded-xl border border-border/70 bg-card/75 p-4 shadow-xs">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <ShieldCheck aria-hidden className="size-4" />
-              </span>
-              <div>
-                <p className="text-sm font-medium text-foreground">安全转移到账号</p>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">无需在页面填写密码</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <Card className="mx-auto w-full max-w-md gap-5 rounded-2xl p-5 shadow-md ring-border/90 sm:p-7">
-          <div>
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <p className="text-xs font-medium uppercase tracking-[0.12em] text-primary">
-                开始兑换
-              </p>
-              <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
-                第 1 步 / 共 4 步
-              </span>
-            </div>
-            <h2 className="text-xl font-semibold tracking-tight text-foreground">输入兑换码</h2>
-            <p className="mt-1 text-sm leading-5 text-muted-foreground">兑换码可在购买渠道获取。</p>
-          </div>
-
-          <Steps current={1} />
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
               <Label htmlFor="code">兑换码</Label>
@@ -151,13 +107,11 @@ export default function HomePage() {
               disabled={turnstileEnabled && !turnstileToken}
               className="w-full"
             >
-              继续选号
+              验证并继续
               <ArrowRight aria-hidden className="size-4" />
             </Button>
           </form>
-          <p className="border-t border-border/70 pt-4 text-center text-xs leading-5 text-muted-foreground">
-            遇到问题请联系你的购买渠道或管理员。
-          </p>
+
         </Card>
       </main>
     </PublicShell>

@@ -2,7 +2,7 @@
 import { PublicSiteNotice, PublicDisclaimer, usePublicSiteSettings } from "@/components/PublicSiteNotice";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { LockKeyhole, Wifi } from "lucide-react";
+import { Wifi } from "lucide-react";
 
 export function PublicShell({
   children,
@@ -15,20 +15,16 @@ export function PublicShell({
   const siteName = settings?.siteName ?? "号码兑换";
   return (
     <div className="relative flex min-h-svh flex-1 flex-col overflow-hidden bg-background">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-48 left-1/2 size-[34rem] -translate-x-1/2 rounded-full bg-primary/5 blur-3xl"
-      />
-      <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
+      <header className="relative z-10 mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-2.5 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="inline-flex min-w-0 flex-1 items-center gap-2.5 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Wifi aria-hidden className="size-5" />
           </span>
-          <span>
-            <span className="block text-sm font-semibold tracking-tight text-foreground">
+          <span className="min-w-0">
+            <span className="block max-w-48 truncate text-sm font-semibold tracking-tight text-foreground">
               {siteName}
             </span>
             <span className="block text-xs text-muted-foreground">
@@ -36,13 +32,13 @@ export function PublicShell({
             </span>
           </span>
         </Link>
-        <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-card/80 px-3 py-1.5 text-xs text-muted-foreground shadow-xs">
-          <LockKeyhole aria-hidden className="size-3.5 text-primary" />
-          {mode === "admin" ? "授权管理员" : "安全兑换"}
-        </div>
+        {mode === "public" && <nav aria-label="站点链接" className="flex shrink-0 items-center gap-5 text-sm">
+          {settings?.purchaseUrl && <a href={settings.purchaseUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">购买卡密</a>}
+          {settings?.supportUrl && <a href={settings.supportUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">客服</a>}
+        </nav>}
       </header>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 pb-8 pt-4 sm:px-6 sm:pb-12">
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-4 pb-12 pt-8 sm:px-6 sm:py-16">
         {mode === "public" && <PublicSiteNotice />}
         {children}
       </div>

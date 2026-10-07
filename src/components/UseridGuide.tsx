@@ -6,8 +6,9 @@ import Image from "next/image";
 
 export function UseridGuide() {
   return (
-    <div className="rounded-xl border border-border bg-muted/50 p-3 text-xs text-muted-foreground">
-      <p className="mb-1.5 font-semibold text-foreground">如何获取 UserID？</p>
+    <details className="rounded-lg border border-border p-3 text-xs text-muted-foreground">
+      <summary className="cursor-pointer font-medium text-foreground">如何获取 UserID？</summary>
+      <div className="mt-3">
       <ol className="list-decimal space-y-0.5 pl-4">
         <li>
           打开{" "}
@@ -57,6 +58,7 @@ export function UseridGuide() {
           前往 esim.gg 获取 UserID →
         </a>
       </div>
-    </div>
+      </div>
+    </details>
   );
 }

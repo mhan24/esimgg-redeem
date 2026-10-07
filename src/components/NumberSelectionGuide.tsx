@@ -1,8 +1,8 @@
-import { Card } from '@/components/ui';
 export function NumberSelectionGuide({ supportUrl }: { supportUrl?: string }) {
-  return <Card className="mb-4 gap-4 text-sm leading-7">
-    <h2 className="text-base font-semibold">选号指引与下单须知</h2>
-    <p className="text-muted-foreground">尊敬的用户：为确保您的业务办理顺畅，请在选号与提交订单前知悉以下说明：</p>
+  return <details className="mt-6 rounded-lg border border-border bg-card p-4 text-sm leading-6">
+    <summary className="cursor-pointer font-medium">选号须知 · 付费号码办理</summary>
+    <div className="mt-4 space-y-4 text-muted-foreground">
+
     <ol className="list-decimal space-y-3 pl-5">
       <li><h3 className="font-semibold">选号建议与接口限制</h3><p>受官方接口速率与调用频次限制，短时间内连续检索易触发限流报错。<strong>建议您优先前往官方网站挑选并确认心仪号码。</strong></p></li>
       <li><h3 className="font-semibold">号码库存与释放机制</h3><p>若系统检索无可用号码，表明当前批次官方免费号码已售罄，需等待官方下一轮号源补货与释放。</p></li>
@@ -18,5 +18,6 @@ export function NumberSelectionGuide({ supportUrl }: { supportUrl?: string }) {
         {supportUrl && <a href={supportUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline underline-offset-4">联系在线客服</a>}
       </div>
     </div>
-  </Card>;
+    </div>
+  </details>;
 }
