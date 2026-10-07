@@ -72,8 +72,8 @@ export async function searchNumbersForCode(params: {
   }
 
   const pattern = (params.search ?? "").trim();
-  if (pattern && !/^\d{2,12}$/.test(pattern)) {
-    throw badRequest("SEARCH_INVALID", "搜索内容仅支持 2-12 位数字");
+  if (pattern && !/^\d{2,15}$/.test(pattern)) {
+    throw badRequest("SEARCH_INVALID", "搜索内容仅支持 2-15 位数字");
   }
 
   // 模式 A 时 zero_price_only=true; 模式 B/C 时 false, 由服务端过滤 (规格 §8/§9)

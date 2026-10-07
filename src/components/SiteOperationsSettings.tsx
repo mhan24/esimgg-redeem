@@ -25,6 +25,7 @@ export function SiteOperationsSettings() {
       const res = await fetch('/api/admin/site-settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       const value = await res.json();
       if (!res.ok) throw new Error(value.message ?? '保存失败');
+      window.dispatchEvent(new Event('site-settings-updated'));
       setNotice('站点设置已保存，前台将在下次刷新时同步。');
     } catch (err) { setError(err instanceof Error ? err.message : '保存失败'); }
     finally { setBusy(false); }
@@ -38,6 +39,7 @@ export function SiteOperationsSettings() {
       <div><Label htmlFor="pause-reason">前台暂停原因（可选）</Label><Input id="pause-reason" value={data.pauseReason} maxLength={300} onChange={e => update({ pauseReason: e.target.value })} placeholder="留空则只显示暂停兑换" /></div>
       <div className="flex flex-wrap gap-2">{['系统维护中，请稍后再试。', '正在补充资源，请稍后再试。', ''].map(reason => <Button key={reason} type="button" variant="outline" onClick={() => update({ pauseReason: reason })}>{reason || '不展示原因'}</Button>)}</div>
       <div><Label htmlFor="purchase-url">卡密购买地点</Label><Input id="purchase-url" type="url" maxLength={2048} value={data.purchaseUrl} onChange={e => update({ purchaseUrl: e.target.value })} placeholder="https://…" /></div>
+      <div><Label htmlFor="support-url">在线客服链接</Label><Input id="support-url" type="url" maxLength={2048} value={data.supportUrl} onChange={e => update({ supportUrl: e.target.value })} placeholder="https://t.me/…" /><p className="mt-2 text-xs text-muted-foreground">用于选号须知与付费号码协助办理，留空可隐藏客服入口。</p></div>
       <div><Label htmlFor="site-disclaimer">免责声明</Label><Textarea id="site-disclaimer" className="min-h-40" maxLength={5000} value={data.disclaimer} onChange={e => update({ disclaimer: e.target.value })} /><p className="mt-2 text-xs text-muted-foreground">支持换行和完整网址，留空可隐藏对应内容。</p></div>
       <Button type="submit" loading={busy}>保存站点设置</Button>
     </fieldset></form>}

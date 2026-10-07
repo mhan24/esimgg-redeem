@@ -9,7 +9,7 @@ export async function GET() {
   try {
     await requireAdmin();
     const s = await getSettings();
-    return jsonOk({ redemptionPaused: s.redemptionPaused, pauseReason: s.pauseReason, purchaseUrl: s.purchaseUrl, disclaimer: s.disclaimer });
+    return jsonOk({ redemptionPaused: s.redemptionPaused, pauseReason: s.pauseReason, purchaseUrl: s.purchaseUrl, supportUrl: s.supportUrl, disclaimer: s.disclaimer });
   } catch (err) { return jsonError(err); }
 }
 export async function PATCH(req: Request) {

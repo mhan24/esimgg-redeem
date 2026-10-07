@@ -1,4 +1,5 @@
 "use client";
+import { NumberSelectionGuide } from "@/components/NumberSelectionGuide";
 import { usePublicSiteSettings } from "@/components/PublicSiteNotice";
 
 /**
@@ -32,6 +33,7 @@ interface SettingsInfo {
 export default function RedeemPage() {
   const siteSettings = usePublicSiteSettings();
   const router = useRouter();
+  const [targetNumber, setTargetNumber] = useState("");
   const [search, setSearch] = useState("");
   const [numbers, setNumbers] = useState<NumberItem[]>([]);
   const [selected, setSelected] = useState<NumberItem | null>(null);
@@ -71,6 +73,7 @@ export default function RedeemPage() {
 
   const doSearch = useCallback(async (e: FormEvent) => {
     e.preventDefault();
+    if (searching || submitting || checkingOrder || submissionBlocked || siteSettings?.redemptionPaused) return;
     setError(null);
     setNotice(null);
     setSelected(null);
@@ -101,7 +104,27 @@ export default function RedeemPage() {
     } finally {
       setSearching(false);
     }
-  }, [search, router]);
+  }, [search, router, searching, submitting, checkingOrder, submissionBlocked, siteSettings?.redemptionPaused]);
+
+  async function onSelectTarget(e: FormEvent) {
+    e.preventDefault();
+    if (searching || submitting || checkingOrder || submissionBlocked || siteSettings?.redemptionPaused) return;
+    const target = targetNumber.replace(/\D/g, "");
+    if (!/^\d{6,15}$/.test(target)) { setError("请输入包含国家区号的完整目标号码（6–15 位数字）。"); return; }
+    setSearching(true); setSelected(null); setNumbers([]); setError(null); setNotice(null);
+    try {
+      const res = await fetch("/api/numbers/search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ search: target }) });
+      const data = await res.json();
+      if (res.status === 401) { router.replace("/"); return; }
+      if (!res.ok) { setError(data.message ?? "暂时无法核验目标号码，请稍后再试。"); return; }
+      const number = (data.numbers ?? []).find((n: NumberItem) => n.msisdn.replace(/\D/g, "") === target);
+      if (!number) { setError("目标号码当前未出现在可兑换号源中，请前往官方确认库存。如为付费或特选号码，请联系在线客服协助补差与转移。"); return; }
+      if (Number(number.price) > 0) { setError("该号码为付费号码，请联系在线客服补足差价并协助办理转移。"); return; }
+      setNumbers([]); setSelected(number);
+      setNotice("目标号码已核验，请填写接收 UserID 或邮箱并确认兑换。");
+    } catch { setError("网络连接失败，暂时无法核验号码，请稍后再试。"); }
+    finally { setSearching(false); }
+  }
 
   async function onConfirm(e: FormEvent) {
     e.preventDefault();
@@ -165,13 +188,22 @@ export default function RedeemPage() {
             {selected ? "确认号码并继续" : "找到你想要的号码"}
           </h1>
           <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-            搜索号码开头或区号，选择后填写 esim.gg UserID 完成兑换。
+            推荐先前往官方确认号码，再输入完整号码；也可搜索号码开头或区号。
           </p>
         </div>
 
+        <NumberSelectionGuide supportUrl={siteSettings?.supportUrl} />
         <Card className="mb-4 gap-5 rounded-2xl shadow-sm ring-border/90">
           <Steps current={selected ? 3 : 2} />
-          <form onSubmit={doSearch}>
+          <form onSubmit={onSelectTarget} className="space-y-2">
+            <Label htmlFor="target-number">完整目标号码（推荐）</Label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input id="target-number" inputMode="tel" autoComplete="off" value={targetNumber} onChange={e => setTargetNumber(e.target.value)} maxLength={40} placeholder="粘贴官方号码，包含国家区号" className="h-11 font-code" />
+              <Button type="submit" loading={searching} disabled={!targetNumber.trim() || siteSettings?.redemptionPaused || submitting || checkingOrder || submissionBlocked} className="shrink-0">使用此号码</Button>
+            </div>
+            <p className="text-xs text-muted-foreground">核验后填写接收账号并确认下单。号码库存和价格以官方接口为准。</p>
+          </form>
+          <form onSubmit={doSearch} className="border-t border-border pt-4">
             <Label htmlFor="search">搜索号码</Label>
             <div className="flex gap-2">
               <Input
@@ -182,7 +214,7 @@ export default function RedeemPage() {
                 className="h-11 font-code"
                 value={search}
                 onChange={(e) =>
-                  setSearch(e.target.value.replace(/\D/g, "").slice(0, 12))
+                  setSearch(e.target.value.replace(/\D/g, "").slice(0, 15))
                 }
               />
               <Button type="submit" loading={searching} disabled={siteSettings?.redemptionPaused || submitting || checkingOrder || submissionBlocked} className="shrink-0">
@@ -199,6 +231,7 @@ export default function RedeemPage() {
         {error && (
           <div ref={errorRef} className="mb-4" role="alert" tabIndex={-1}>
             <Alert kind="error">{error}</Alert>
+            {siteSettings?.supportUrl && <a href={siteSettings.supportUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm text-primary underline underline-offset-4">联系在线客服</a>}
             {submissionBlocked && <Button className="mt-3" onClick={() => router.replace("/")}>返回首页查看订单状态</Button>}
           </div>
         )}
