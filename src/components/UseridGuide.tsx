@@ -44,20 +44,6 @@ export function UseridGuide() {
           priority={false}
         />
       </div>
-      <p className="mt-1.5 text-center text-[11px] text-muted-foreground">
-        示例：点击右上角头像后，在弹出窗口中查看 cm 开头的 UserID
-      </p>
-
-      <div className="mt-2 text-center">
-        <a
-          href="https://esim.gg/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium text-primary hover:underline"
-        >
-          前往 esim.gg 获取 UserID →
-        </a>
-      </div>
       </div>
     </details>
   );

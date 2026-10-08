@@ -181,7 +181,6 @@ export default function RedeemPage() {
     <PublicShell>
       <main className="w-full max-w-2xl">
         <div className="mb-8 space-y-3">
-          <p className="text-xs font-medium text-muted-foreground">{selected ? "核对号码与接收账号" : "卡密验证通过"}</p>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{selected ? "确认兑换并转移" : "挑选你的 eSIM 号码"}</h1>
           {!selected && settings && <p className="text-sm leading-6 text-muted-foreground">当前卡密含 1 个{settings.allowPaidNumbers ? "可兑换" : "官方免费基础"}号码及 €{Number(settings.initialBalance).toFixed(2)} 初始余额。</p>}
         </div>
@@ -240,14 +239,6 @@ export default function RedeemPage() {
 
         {!selected && selectionMode === "search" && numbers.length > 0 && (
           <Card className="gap-4 rounded-2xl shadow-none">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-base font-semibold text-foreground">搜索结果</h2>
-              </div>
-              <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                {numbers.length} 个可选
-              </span>
-            </div>
             <ul className="divide-y divide-border/70">
               {numbers.map((n) => (
                 <li
@@ -342,7 +333,7 @@ export default function RedeemPage() {
           </Card>
         )}
 
-        <NumberSelectionGuide supportUrl={siteSettings?.supportUrl} initialBalance={settings?.initialBalance} allowPaidNumbers={settings?.allowPaidNumbers} />
+        {!selected && <NumberSelectionGuide />}
       </main>
     </PublicShell>
   );

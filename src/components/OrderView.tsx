@@ -17,7 +17,6 @@ import {
   Input,
   Label,
   Spinner,
-  Steps,
   formatMsisdn,
   formatPrice,
 } from "@/components/ui";
@@ -143,7 +142,6 @@ export function OrderView({ token }: { token: string }) {
     <PublicShell>
       <main className="w-full max-w-2xl">
         <Card className="gap-5 rounded-2xl shadow-none ring-border/90">
-          <Steps current={completed ? 4 : 3} />
 
           {completed && (
             <div className="space-y-4 text-center">
@@ -167,7 +165,6 @@ export function OrderView({ token }: { token: string }) {
               </dl>
               <section className="space-y-3 rounded-xl border border-border p-4 text-left text-sm leading-6" aria-labelledby="install-guide-title">
                 <h2 id="install-guide-title" className="font-semibold">如何安装到手机？</h2>
-                <p className="text-muted-foreground">号码已转移至你的官方账户。安装二维码需在 esim.gg 获取，本站不提供二维码。</p>
                 <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
                   <li>登录接收号码的 esim.gg 账户。</li>
                   <li>在账户的线路或号码列表中找到上方号码。</li>
@@ -182,17 +179,13 @@ export function OrderView({ token }: { token: string }) {
           {transferFailed && (
             <div className="space-y-4">
               <h1 className="text-2xl font-semibold tracking-tight text-foreground">号码已购得，转移未完成</h1>
-              <Alert kind="warning" title="号码已购买，可重新提交转移">
+              <Alert kind="warning">
                 <p>
                   号码：
                   <span className="font-code">{formatMsisdn(order.msisdn)}</span>
                 </p>
                 <p>{order.errorMessage ?? "号码转移失败，请核对接收账号后重试，或联系管理员。"}</p>
               </Alert>
-              <p className="text-sm text-muted-foreground">
-                请核对接收 UserID（推荐）或已注册的账户邮箱，再提交转移。
-                此订单已保留，重试只转移已购号码，不会再次购买。
-              </p>
               <form onSubmit={onRetry} className="space-y-3">
                 <div>
                   <Label htmlFor="retry-userid">正确的 UserID 或已注册邮箱</Label>

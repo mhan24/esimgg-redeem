@@ -76,14 +76,11 @@ export default function HomePage() {
     <PublicShell>
       <main className="grid w-full items-center gap-9 md:grid-cols-[1fr_1.05fr] md:gap-16 lg:gap-24">
         <div className="space-y-5">
-          <h1 className="max-w-md text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">自助兑换你的 <span className="text-primary">esim.gg 号码</span></h1>
+          <h1 className="max-w-md text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">自助兑换你的 <span className="inline-block whitespace-nowrap text-primary">esim.gg 号码</span></h1>
           <p className="max-w-sm text-sm leading-7 text-muted-foreground">输入卡密选号，官方线路自动转移至你的 esim.gg 账户。{settings?.initialBalance && <> 含 €{Number(settings.initialBalance).toFixed(2)} 初始余额。</>}</p>
         </div>
         <Card className="w-full gap-7 rounded-2xl p-6 shadow-none sm:p-9">
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold tracking-tight">卡密验证</h2>
-            <p className="text-sm leading-6 text-muted-foreground">新卡密可选号兑换；已兑换卡密可查询订单进度。</p>
-          </div>
+          <p className="text-sm leading-6 text-muted-foreground">已兑换？输入原卡密查看订单进度。</p>
           <form onSubmit={onSubmit} className="space-y-5">
             <div>
               <Label htmlFor="code">兑换卡密</Label>

@@ -27,9 +27,7 @@ export function PublicShell({
             <span className="block max-w-48 truncate text-sm font-semibold tracking-tight text-foreground">
               {siteName}
             </span>
-            <span className="hidden text-xs text-muted-foreground sm:block">
-              {mode === "admin" ? "管理后台" : "号码兑换"}
-            </span>
+            {mode === "admin" && <span className="hidden text-xs text-muted-foreground sm:block">管理后台</span>}
           </span>
         </Link>
         {mode === "public" && <nav aria-label="站点链接" className="flex shrink-0 items-center gap-3 text-xs sm:gap-6 sm:text-sm">
@@ -44,15 +42,7 @@ export function PublicShell({
       </div>
 
       <footer className="relative z-10 border-t border-border/70 bg-background">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-5 py-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <span>
-            {mode === "admin"
-              ? "仅限授权管理员访问"
-              : "卡密与订单链接仅供本人使用"}
-          </span>
-          <span>{siteName} · {mode === "admin" ? "管理后台" : "号码兑换"}</span>
-        </div>
-        {mode === "public" && <PublicDisclaimer />}
+        {mode === "admin" ? <p className="mx-auto max-w-6xl px-5 py-5 text-xs text-muted-foreground sm:px-8">仅限授权管理员访问</p> : <div className="pt-4"><PublicDisclaimer /></div>}
       </footer>
     </div>
   );
