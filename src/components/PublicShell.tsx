@@ -32,9 +32,9 @@ export function PublicShell({
             </span>
           </span>
         </Link>
-        {mode === "public" && <nav aria-label="站点链接" className="flex shrink-0 items-center gap-4 text-sm sm:gap-6">
-          {settings?.purchaseUrl && <a href={settings.purchaseUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">购买卡密</a>}
-          {settings?.supportUrl && <a href={settings.supportUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">客服</a>}
+        {mode === "public" && <nav aria-label="站点链接" className="flex shrink-0 items-center gap-3 text-xs sm:gap-6 sm:text-sm">
+          {settings?.purchaseUrl && <a href={settings.purchaseUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">购买新卡密</a>}
+          {settings?.supportUrl && <a href={settings.supportUrl} target="_blank" rel="noopener noreferrer" aria-label={settings.supportUrl.startsWith("https://t.me/") ? "Telegram 在线客服" : "在线客服"} className="inline-flex min-h-10 items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">{settings.supportUrl.startsWith("https://t.me/") ? <><span className="sm:hidden">TG 客服</span><span className="hidden sm:inline">Telegram 客服</span></> : "在线客服"}</a>}
         </nav>}
       </header>
 
@@ -48,7 +48,7 @@ export function PublicShell({
           <span>
             {mode === "admin"
               ? "仅限授权管理员访问"
-              : "兑换码与订单链接仅供本人使用"}
+              : "卡密与订单链接仅供本人使用"}
           </span>
           <span>{siteName} · {mode === "admin" ? "管理后台" : "号码兑换"}</span>
         </div>

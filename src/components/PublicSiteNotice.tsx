@@ -34,5 +34,5 @@ export function PublicDisclaimer() {
   const settings = usePublicSiteSettings();
   if (!settings?.disclaimer) return null;
   const parts = settings.disclaimer.split(/(https?:\/\/[^\s，。；、（）<>]+)/g);
-  return <details className="mx-auto max-w-5xl px-4 pb-5 text-xs leading-6 text-muted-foreground sm:px-6"><summary className="cursor-pointer font-medium hover:text-foreground">关于本站与免责声明</summary><p className="mt-3 whitespace-pre-wrap break-words">{parts.map((part, i) => /^https?:\/\//.test(part) ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{part}</a> : part)}</p></details>;
+  return <details className="mx-auto max-w-5xl px-4 pb-5 text-xs leading-6 text-muted-foreground sm:px-6"><summary className="cursor-pointer font-medium hover:text-foreground">关于本站与服务声明</summary><p className="mt-3 whitespace-pre-wrap break-words">{parts.map((part, i) => /^https?:\/\//.test(part) ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{part}</a> : part)}</p></details>;
 }

@@ -150,56 +150,62 @@ export function OrderView({ token }: { token: string }) {
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success/10">
                 <CircleCheck aria-hidden className="size-6 text-success-foreground" />
               </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">兑换成功</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">兑换并转移成功</h1>
               <dl className="space-y-2 rounded-xl bg-muted/50 p-4 text-left text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">号码</dt>
+                  <dt className="text-muted-foreground">已兑换号码</dt>
                   <dd className="font-code font-medium">
                     {formatMsisdn(order.msisdn)}
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">已转移至</dt>
+                  <dt className="text-muted-foreground">归属账户</dt>
                   <dd className="max-w-[65%] break-all text-right font-medium">
                     {order.recipientAccountId ?? order.recipientEmail}
                   </dd>
                 </div>
               </dl>
-              <p className="text-sm text-muted-foreground">
-                请登录 esim.gg 查看号码。
-              </p>
+              <section className="space-y-3 rounded-xl border border-border p-4 text-left text-sm leading-6" aria-labelledby="install-guide-title">
+                <h2 id="install-guide-title" className="font-semibold">如何安装到手机？</h2>
+                <p className="text-muted-foreground">号码已转移至你的官方账户。安装二维码需在 esim.gg 获取，本站不提供二维码。</p>
+                <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
+                  <li>登录接收号码的 esim.gg 账户。</li>
+                  <li>在账户的线路或号码列表中找到上方号码。</li>
+                  <li>打开号码详情，查看 eSIM 安装信息或激活二维码。</li>
+                  <li>在支持 eSIM 的手机上按官方指引添加 eSIM；同一手机可使用官方提供的安装方式。</li>
+                </ol>
+                <a href="https://esim.gg" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">前往 esim.gg 安装 eSIM ↗</a>
+              </section>
             </div>
           )}
 
           {transferFailed && (
             <div className="space-y-4">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">号码已购买，但转移失败</h1>
-              <Alert kind="error" title="请检查接收账号后重新转移">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">号码已购得，转移未完成</h1>
+              <Alert kind="warning" title="号码已购买，可重新提交转移">
                 <p>
                   号码：
                   <span className="font-code">{formatMsisdn(order.msisdn)}</span>
                 </p>
-                <p>状态：号码购买成功，等待转移</p>
                 <p>{order.errorMessage ?? "号码转移失败，请核对接收账号后重试，或联系管理员。"}</p>
               </Alert>
               <p className="text-sm text-muted-foreground">
-                请确认接收 UserID 或邮箱正确，并已注册 esim.gg，然后在下方重新转移。
-                系统不会重复购买号码。
+                请核对接收 UserID（推荐）或已注册的账户邮箱，再提交转移。
+                此订单已保留，重试只转移已购号码，不会再次购买。
               </p>
               <form onSubmit={onRetry} className="space-y-3">
                 <div>
-                  <Label htmlFor="retry-userid">新的 esim.gg UserID 或邮箱</Label>
+                  <Label htmlFor="retry-userid">正确的 UserID 或已注册邮箱</Label>
                   <Input
                     id="retry-userid"
                     autoComplete="off"
                     spellCheck={false}
-                    placeholder="UserID（推荐）或 esim.gg 账户邮箱"
+                    placeholder="cm 开头的 UserID 或已注册账户邮箱"
                     className="font-code"
                     value={recipient}
                     onChange={(e) => setRecipient(e.target.value.trim())}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">推荐使用 UserID，可更准确地定位接收账号；也支持使用账户邮箱。</p>
                 <UseridGuide />
                 {error && <Alert kind="error">{error}</Alert>}
                 <Button
@@ -208,7 +214,7 @@ export function OrderView({ token }: { token: string }) {
                   disabled={!recipient.trim()}
                   className="w-full"
                 >
-                  重新转移
+                  重新提交转移
                 </Button>
               </form>
             </div>
@@ -216,10 +222,9 @@ export function OrderView({ token }: { token: string }) {
 
           {uncertain && (
             <div className="space-y-4">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">购买结果核实中</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">正在核验官方购买结果</h1>
               <Alert kind="warning">
-                系统正在向 esim.gg 核实购买结果，请稍后刷新查看。
-                不会重复购买号码，不会重复扣费。
+                系统正在向 esim.gg 核实号码是否已购得。结果确认前不会再次购买，请稍后刷新状态或联系客服。
               </Alert>
               <p className="text-sm text-muted-foreground">
                 号码：<span className="font-code">{formatMsisdn(order.msisdn)}</span>
@@ -232,9 +237,9 @@ export function OrderView({ token }: { token: string }) {
 
           {(order.status === "PURCHASED" || order.status === "TRANSFERRING" || order.status === "PURCHASING" || order.status === "PENDING") && (
             <div className="space-y-4">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">正在处理</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">订单已受理，正在自动开通</h1>
               <Alert kind="info">
-                {order.status === "PENDING" || order.status === "PURCHASING" ? "订单已受理，正在购买号码，请稍候。请勿再次提交兑换。" : "号码购买成功，正在转移至你的 esim.gg 账户，请稍候。"}
+                {order.status === "PENDING" || order.status === "PURCHASING" ? "正在采购号码，请保持网络连接，勿重复提交。此页面会自动更新结果。" : "号码已购买，正在转移至你的 esim.gg 账户。此页面会自动更新结果。"}
               </Alert>
               <p className="text-sm text-muted-foreground">
                 号码：<span className="font-code">{formatMsisdn(order.msisdn)}</span>
@@ -247,12 +252,12 @@ export function OrderView({ token }: { token: string }) {
 
           {failed && (
             <div className="space-y-4">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">兑换未完成</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">本次兑换未成功</h1>
               <Alert kind="error">
-                {order.errorMessage ?? "兑换失败，兑换码未消耗，请重新选号。"}
+                {order.errorMessage ?? "号码未能成功购买，卡密可继续使用，请重新选号。"}
               </Alert>
               <Button className="w-full" onClick={() => router.push("/redeem")}>
-                重新选号
+                返回重新选号
               </Button>
             </div>
           )}
@@ -263,7 +268,7 @@ export function OrderView({ token }: { token: string }) {
               <dd>{formatPrice(order.numberPrice)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt>初始余额</dt>
+              <dt>内置初始余额</dt>
               <dd>€{order.initialBalance}</dd>
             </div>
           </dl>

@@ -2,7 +2,7 @@ import { ApiError, badRequest } from "@/lib/http";
 
 export const DEFAULT_SUPPORT_URL = "https://t.me/setup0de?direct";
 export const DEFAULT_PURCHASE_URL = "https://shop.setup0.de/products/esimgg";
-export const DEFAULT_DISCLAIMER = "本站是使用 https://github.com/esimgg/api 进行的二次开发，通过搜寻号码、订购号码、转移线路所有权三项功能实现的自助转移，兑换号码均为 esim.gg 官方资源，余额为站点普通用户钱包。和官方购买并无二异（仅获得部分功能白名单），如不信任可以去官方自行购买，官方地址 https://esim.gg，优惠码可以用 SETUP，会优惠 0.4 欧元。";
+export const DEFAULT_DISCLAIMER = "1. 独立第三方服务：本站提供 esim.gg 官方号码检索、自动化代购及所有权自助转移，与 esim.gg 为独立服务主体。\n2. 资源与服务归属：号码均来自 esim.gg 官方资源。兑换并转移完成后，号码归属你的官方账户；后续充值、资费及网络服务以官方规则与服务条款为准。\n3. 官方自购：如需直接购买，请访问 https://esim.gg。结账可尝试优惠码 SETUP，优惠金额以官方结账页面为准。\n本平台通过 https://github.com/esimgg/api 提供的接口实现自助兑换。";
 
 export interface PublicSiteSettings {
   redemptionPaused: boolean;
@@ -14,6 +14,7 @@ export interface PublicSiteSettings {
 
 export interface PublicSiteInfo extends PublicSiteSettings {
   siteName: string;
+  initialBalance: string;
 }
 
 export function assertRedemptionOpen(settings: Pick<PublicSiteSettings, "redemptionPaused" | "pauseReason">) {

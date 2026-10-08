@@ -37,7 +37,7 @@ export function conflict(code: string, message?: string) {
 }
 
 export function tooManyRequests(retryAfterSec: number) {
-  return new ApiError(429, "RATE_LIMITED", "请求过于频繁，请稍后再试。", {
+  return new ApiError(429, "RATE_LIMITED", `操作过于频繁，请等待 ${retryAfterSec} 秒后再试。`, {
     retryAfterSec,
   });
 }

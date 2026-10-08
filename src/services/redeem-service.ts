@@ -44,12 +44,12 @@ export async function latestActiveOrder(codeId: string): Promise<Order | null> {
 
 export async function verifyCode(rawCode: string): Promise<VerifyResult> {
   const code = normalizeCode(rawCode);
-  if (!code) throw notFound("卡密不存在");
+  if (!code) throw notFound("请输入完整的兑换卡密");
 
   const redeemCode: RedeemCode | null = await prisma.redeemCode.findUnique({
     where: { code },
   });
-  if (!redeemCode) throw notFound("卡密不存在");
+  if (!redeemCode) throw notFound("未找到此卡密，请检查输入内容或联系售卡客服");
   if (redeemCode.status === "DISABLED") {
     throw forbidden("卡密已被禁用，请联系管理员");
   }
