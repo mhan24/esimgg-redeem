@@ -172,3 +172,28 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Public redemption surfaces share one compact shape and interaction system. */
+.public-shell [data-slot="card"] {
+  border: 1px solid var(--border);
+  box-shadow: none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+.public-shell [data-slot="button"] {
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.public-shell [data-slot="button"]:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.public-shell details {
+  border-radius: var(--radius-lg);
+}
+.public-shell summary {
+  min-height: 2.75rem;
+  align-content: center;
+}
+.public-shell summary:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}

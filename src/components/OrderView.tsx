@@ -119,7 +119,7 @@ export function OrderView({ token }: { token: string }) {
     return (
       <PublicShell>
         <main className="w-full max-w-lg">
-        <Card className="gap-4 rounded-2xl shadow-sm">
+        <Card className="gap-4 rounded-2xl shadow-none">
           <div>
             <h1 className="text-lg font-semibold text-foreground">无法打开订单</h1>
             <p className="mt-1 text-sm text-muted-foreground">请检查链接是否完整，或返回首页重新开始。</p>
@@ -142,7 +142,7 @@ export function OrderView({ token }: { token: string }) {
   return (
     <PublicShell>
       <main className="w-full max-w-2xl">
-        <Card className="gap-5 rounded-2xl shadow-sm ring-border/90">
+        <Card className="gap-5 rounded-2xl shadow-none ring-border/90">
           <Steps current={completed ? 4 : 3} />
 
           {completed && (
@@ -150,7 +150,7 @@ export function OrderView({ token }: { token: string }) {
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success/10">
                 <CircleCheck aria-hidden className="size-6 text-success-foreground" />
               </div>
-              <h1 className="text-xl font-bold text-foreground">兑换成功</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">兑换成功</h1>
               <dl className="space-y-2 rounded-xl bg-muted/50 p-4 text-left text-sm">
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">号码</dt>
@@ -160,7 +160,7 @@ export function OrderView({ token }: { token: string }) {
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">已转移至</dt>
-                  <dd className="font-medium">
+                  <dd className="max-w-[65%] break-all text-right font-medium">
                     {order.recipientAccountId ?? order.recipientEmail}
                   </dd>
                 </div>
@@ -173,7 +173,7 @@ export function OrderView({ token }: { token: string }) {
 
           {transferFailed && (
             <div className="space-y-4">
-              <h1 className="text-xl font-bold text-foreground">号码已购买，但转移失败</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">号码已购买，但转移失败</h1>
               <Alert kind="error" title="请检查接收账号后重新转移">
                 <p>
                   号码：
@@ -216,7 +216,7 @@ export function OrderView({ token }: { token: string }) {
 
           {uncertain && (
             <div className="space-y-4">
-              <h1 className="text-xl font-bold text-foreground">购买结果核实中</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">购买结果核实中</h1>
               <Alert kind="warning">
                 系统正在向 esim.gg 核实购买结果，请稍后刷新查看。
                 不会重复购买号码，不会重复扣费。
@@ -232,7 +232,7 @@ export function OrderView({ token }: { token: string }) {
 
           {(order.status === "PURCHASED" || order.status === "TRANSFERRING" || order.status === "PURCHASING" || order.status === "PENDING") && (
             <div className="space-y-4">
-              <h1 className="text-xl font-bold text-foreground">正在处理</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">正在处理</h1>
               <Alert kind="info">
                 {order.status === "PENDING" || order.status === "PURCHASING" ? "订单已受理，正在购买号码，请稍候。请勿再次提交兑换。" : "号码购买成功，正在转移至你的 esim.gg 账户，请稍候。"}
               </Alert>
@@ -247,7 +247,7 @@ export function OrderView({ token }: { token: string }) {
 
           {failed && (
             <div className="space-y-4">
-              <h1 className="text-xl font-bold text-foreground">兑换未完成</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">兑换未完成</h1>
               <Alert kind="error">
                 {order.errorMessage ?? "兑换失败，兑换码未消耗，请重新选号。"}
               </Alert>

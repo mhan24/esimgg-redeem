@@ -177,22 +177,22 @@ export default function RedeemPage() {
 
   return (
     <PublicShell>
-      <main className="w-full max-w-xl">
-        <div className="mb-6 space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">{selected ? "02 / 接收账号" : "01 / 选择号码"}</p>
-          <h1 className="text-2xl font-semibold tracking-tight">{selected ? "确认兑换" : "选择你的号码"}</h1>
+      <main className="w-full max-w-2xl">
+        <div className="mb-8 space-y-3">
+          <p className="text-xs font-medium text-muted-foreground">{selected ? "选择号码 / 接收账号" : "兑换码已验证"}</p>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{selected ? "确认兑换" : "选择你的号码"}</h1>
         </div>
 
-        {!selected && <Card className="mb-4 gap-5 rounded-xl shadow-sm">
-          <div className="flex gap-1 rounded-lg bg-muted p-1" aria-label="选号方式">
-            <Button type="button" variant={selectionMode === "direct" ? "secondary" : "ghost"} aria-pressed={selectionMode === "direct"} disabled={searching || submitting} onClick={() => setSelectionMode("direct")} className="flex-1">输入号码</Button>
-            <Button type="button" variant={selectionMode === "search" ? "secondary" : "ghost"} aria-pressed={selectionMode === "search"} disabled={searching || submitting} onClick={() => setSelectionMode("search")} className="flex-1">搜索号码</Button>
+        {!selected && <Card className="mb-4 gap-5 rounded-2xl shadow-none">
+          <div className="flex gap-1 rounded-xl bg-muted p-1.5" aria-label="选号方式">
+            <Button type="button" variant={selectionMode === "direct" ? "secondary" : "ghost"} aria-pressed={selectionMode === "direct"} disabled={searching || submitting} onClick={() => setSelectionMode("direct")} className="h-11 flex-1 rounded-lg">输入号码</Button>
+            <Button type="button" variant={selectionMode === "search" ? "secondary" : "ghost"} aria-pressed={selectionMode === "search"} disabled={searching || submitting} onClick={() => setSelectionMode("search")} className="h-11 flex-1 rounded-lg">搜索号码</Button>
           </div>
-          {selectionMode === "direct" && <form onSubmit={onSelectTarget} className="space-y-2">
+          {selectionMode === "direct" && <form onSubmit={onSelectTarget} className="space-y-3">
             <Label htmlFor="target-number">目标号码</Label>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Input id="target-number" inputMode="tel" autoComplete="off" value={targetNumber} onChange={e => setTargetNumber(e.target.value)} maxLength={40} placeholder="粘贴官方号码，包含国家区号" className="h-11 font-code" />
-              <Button type="submit" loading={searching} disabled={!targetNumber.trim() || siteSettings?.redemptionPaused || submitting || checkingOrder || submissionBlocked} className="shrink-0">使用此号码</Button>
+              <Input id="target-number" inputMode="tel" autoComplete="off" value={targetNumber} onChange={e => setTargetNumber(e.target.value)} maxLength={40} placeholder="粘贴官方号码，包含国家区号" className="h-12 font-code" />
+              <Button type="submit" loading={searching} disabled={!targetNumber.trim() || siteSettings?.redemptionPaused || submitting || checkingOrder || submissionBlocked} className="h-12 shrink-0">使用此号码</Button>
             </div>
             <p className="text-xs text-muted-foreground">包含国家区号，可直接粘贴官方号码。</p>
           </form>}
@@ -204,7 +204,7 @@ export default function RedeemPage() {
                 inputMode="numeric"
                 autoComplete="off"
                 placeholder="例如 37255"
-                className="h-11 font-code"
+                className="h-12 font-code"
                 value={search}
                 onChange={(e) =>
                   setSearch(e.target.value.replace(/\D/g, "").slice(0, 15))
@@ -236,7 +236,7 @@ export default function RedeemPage() {
         )}
 
         {!selected && selectionMode === "search" && numbers.length > 0 && (
-          <Card className="gap-4 rounded-xl shadow-sm">
+          <Card className="gap-4 rounded-2xl shadow-none">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-base font-semibold text-foreground">搜索结果</h2>
@@ -278,7 +278,7 @@ export default function RedeemPage() {
         )}
 
         {selected && (
-          <Card className="gap-5 rounded-xl shadow-sm">
+          <Card className="gap-5 rounded-2xl shadow-none">
 
             <dl className="space-y-3 rounded-xl bg-muted/50 p-4 text-sm">
               <div className="flex justify-between">
@@ -306,7 +306,7 @@ export default function RedeemPage() {
                   autoComplete="off"
                   spellCheck={false}
                   placeholder="UserID（推荐）或 esim.gg 账户邮箱"
-                  className="font-code"
+                  className="h-12 font-code"
                   value={recipient}
                   onChange={(e) => setRecipient(e.target.value.trim())}
                 />
@@ -322,7 +322,7 @@ export default function RedeemPage() {
                   variant="secondary"
                   onClick={() => setSelected(null)}
                   disabled={submitting}
-                  className="flex-1"
+                  className="h-12 flex-1"
                 >
                   返回重选
                 </Button>
@@ -330,7 +330,7 @@ export default function RedeemPage() {
                   type="submit"
                   loading={submitting}
                   disabled={!recipient.trim() || siteSettings?.redemptionPaused || checkingOrder || submissionBlocked}
-                  className="flex-1"
+                  className="h-12 flex-1"
                 >
                   {submitting ? "正在购买并转移…" : checkingOrder ? "正在检查订单…" : "确认兑换"}
                 </Button>

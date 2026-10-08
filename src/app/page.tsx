@@ -72,14 +72,17 @@ export default function HomePage() {
 
   return (
     <PublicShell>
-      <main className="w-full max-w-md">
-        <Card className="w-full gap-6 rounded-xl p-6 shadow-sm sm:p-8">
+      <main className="grid w-full items-center gap-9 md:grid-cols-[1fr_1.05fr] md:gap-16 lg:gap-24">
+        <div className="space-y-5">
+          <h1 className="max-w-sm text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl">兑换你的 <span className="text-primary">eSIM 号码</span></h1>
+          <p className="max-w-xs text-sm leading-7 text-muted-foreground">输入卡密，选择号码，转移至你的 esim.gg 账户。</p>
+        </div>
+        <Card className="w-full gap-7 rounded-2xl p-6 shadow-none sm:p-9">
           <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">eSIM 号码兑换</p>
-            <h1 className="text-2xl font-semibold tracking-tight">输入卡密</h1>
+            <h2 className="text-xl font-semibold tracking-tight">输入卡密</h2>
             <p className="text-sm text-muted-foreground">兑换号码，或查看已有订单。</p>
           </div>
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-5">
             <div>
               <Label htmlFor="code">兑换码</Label>
               <Input
@@ -89,7 +92,7 @@ export default function HomePage() {
                 autoComplete="off"
                 spellCheck={false}
                 placeholder="ESIM-XXXX-XXXX-XXXX"
-                className="h-12 text-center font-code text-base tracking-widest uppercase"
+                className="h-14 font-code text-base tracking-wide uppercase"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
               />
@@ -105,7 +108,7 @@ export default function HomePage() {
               type="submit"
               loading={loading}
               disabled={turnstileEnabled && !turnstileToken}
-              className="w-full"
+              className="h-12 w-full justify-between px-4"
             >
               验证并继续
               <ArrowRight aria-hidden className="size-4" />
