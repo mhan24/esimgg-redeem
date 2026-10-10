@@ -22,7 +22,8 @@ export function UseridGuide() {
           </a>
           ，登录后点击右上角头像
         </li>
-        <li>在账户信息卡片中长按邮箱地址；电脑端可尝试点击或按住邮箱地址查看。</li>
+        <li>电脑端：将鼠标移到邮箱地址上，按住鼠标左键长按。</li>
+        <li>手机端：用单指长按邮箱地址。</li>
         <li>复制显示的 cm 开头的 UserID，并完整粘贴到接收账号输入框。</li>
       </ol>
 
@@ -37,7 +38,7 @@ export function UseridGuide() {
       <div className="mt-3 overflow-hidden rounded-lg border border-border bg-card">
         <Image
           src="/userid-guide.jpg"
-          alt="获取 UserID 示例：点击右上角头像后，在弹出的账户窗口中查看 cm 开头的 UserID"
+          alt="获取 UserID 示例：打开账户信息后，电脑按住鼠标左键长按邮箱，手机用单指长按邮箱，复制 cm 开头的 UserID"
           width={762}
           height={330}
           className="h-auto w-full"

@@ -18,6 +18,7 @@ export async function GET() {
     return jsonOk({
       order: order ? serializeOrder(order) : null,
       settings: {
+        redemptionPaused: settings.redemptionPaused,
         initialBalance: settings.initialBalance,
         allowFreeNumbers: settings.allowFreeNumbers,
         allowPaidNumbers: settings.allowPaidNumbers,

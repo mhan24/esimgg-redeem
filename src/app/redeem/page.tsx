@@ -29,19 +29,29 @@ interface SettingsInfo {
   initialBalance: string;
   allowPaidNumbers: boolean;
   allowFreeNumbers: boolean;
+  redemptionPaused: boolean;
+}
+
+interface InitialSelection {
+  settings?: SettingsInfo;
+  numbers?: NumberItem[];
+  redirect?: string;
+  error?: string;
+  blocked?: boolean;
 }
 
 export default function RedeemPage() {
   const siteSettings = usePublicSiteSettings();
   const router = useRouter();
-  const [selectionMode, setSelectionMode] = useState<"direct" | "search">("direct");
+  const [selectionMode, setSelectionMode] = useState<"direct" | "search">("search");
   const [targetNumber, setTargetNumber] = useState("");
   const [search, setSearch] = useState("");
   const [numbers, setNumbers] = useState<NumberItem[]>([]);
   const [selected, setSelected] = useState<NumberItem | null>(null);
   const [recipient, setRecipient] = useState("");
   const [settings, setSettings] = useState<SettingsInfo | null>(null);
-  const [searching, setSearching] = useState(false);
+  const [searching, setSearching] = useState(true);
+  const initialSelectionRef = useRef<Promise<InitialSelection> | null>(null);
   const submittingRef = useRef(false);
   const [checkingOrder, setCheckingOrder] = useState(true);
   const [submissionBlocked, setSubmissionBlocked] = useState(false);
@@ -50,22 +60,53 @@ export default function RedeemPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  // 进入页面: 校验兑换会话 + 获取初始余额展示
+  // Each page mount shares one initial request, including React Strict Mode replay.
+  // Resume existing orders before searching; a blank pattern asks for available numbers.
   useEffect(() => {
-    fetch("/api/redeem/context")
-      .then(async (res) => {
-        if (res.status === 401) {
-          router.replace("/");
-          return null;
+    let active = true;
+    if (!initialSelectionRef.current) {
+      initialSelectionRef.current = (async (): Promise<InitialSelection> => {
+        let context;
+        try {
+          const res = await fetch("/api/redeem/context", { cache: "no-store" });
+          if (res.status === 401) return { redirect: "/" };
+          context = await res.json();
+          if (!res.ok || !context.settings) return { error: context.message ?? "无法验证卡密，请返回首页重试。", blocked: true };
+        } catch {
+          return { error: "暂时无法验证卡密，请检查网络后返回首页重试。", blocked: true };
         }
-        return res.json();
-      })
-      .then((data) => {
-        if (data?.order?.token) { router.replace(`/order/${data.order.token}`); return; }
-        if (data?.settings) setSettings(data.settings);
-      })
-      .catch(() => undefined)
-      .finally(() => setCheckingOrder(false));
+        if (context.order?.token) return { redirect: `/order/${context.order.token}` };
+        const settings: SettingsInfo = context.settings;
+        if (settings.redemptionPaused || (!settings.allowFreeNumbers && !settings.allowPaidNumbers)) return { settings };
+        try {
+          const res = await fetch("/api/numbers/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ search: "" }),
+          });
+          if (res.status === 401) return { redirect: "/" };
+          const data = await res.json();
+          if (!res.ok) return { settings, error: data.message ?? "暂时无法获取号码，请稍后手动检索或前往官网挑号。" };
+          return { settings, numbers: data.numbers ?? [] };
+        } catch {
+          return { settings, error: "暂时无法获取号码，请检查网络后手动检索。" };
+        }
+      })();
+    }
+    void initialSelectionRef.current.then(data => {
+      if (!active) return;
+      if (data.redirect) { router.replace(data.redirect); return; }
+      if (data.settings) setSettings(data.settings);
+      if (data.numbers) {
+        setNumbers(data.numbers);
+        if (data.numbers.length === 0) setNotice("暂时没有可兑换号码，可稍后检索或前往官网挑号。");
+      }
+      if (data.error) setError(data.error);
+      setSubmissionBlocked(data.blocked ?? false);
+      setCheckingOrder(false);
+      setSearching(false);
+    });
+    return () => { active = false; };
   }, [router]);
 
   useEffect(() => {
@@ -187,7 +228,7 @@ export default function RedeemPage() {
 
         {!selected && <Card className="mb-4 gap-5 rounded-2xl shadow-none">
           <div className="flex gap-1 rounded-xl bg-muted p-1.5" aria-label="选号方式">
-            <Button type="button" variant={selectionMode === "direct" ? "secondary" : "ghost"} aria-pressed={selectionMode === "direct"} disabled={searching || submitting} onClick={() => setSelectionMode("direct")} className="h-11 flex-1 rounded-lg">精准输入（推荐）</Button>
+            <Button type="button" variant={selectionMode === "direct" ? "secondary" : "ghost"} aria-pressed={selectionMode === "direct"} disabled={searching || submitting} onClick={() => setSelectionMode("direct")} className="h-11 flex-1 rounded-lg">精准输入</Button>
             <Button type="button" variant={selectionMode === "search" ? "secondary" : "ghost"} aria-pressed={selectionMode === "search"} disabled={searching || submitting} onClick={() => setSelectionMode("search")} className="h-11 flex-1 rounded-lg">在线检索</Button>
           </div>
           {selectionMode === "direct" && <form onSubmit={onSelectTarget} className="space-y-3">
@@ -205,7 +246,7 @@ export default function RedeemPage() {
                 id="search"
                 inputMode="numeric"
                 autoComplete="off"
-                placeholder="输入 2-15 位数字，如 372 或 888"
+                placeholder="留空获取随机号码，或输入 2-15 位数字"
                 className="h-12 font-code"
                 value={search}
                 onChange={(e) =>
@@ -214,14 +255,14 @@ export default function RedeemPage() {
               />
               <Button type="submit" loading={searching} disabled={siteSettings?.redemptionPaused || submitting || checkingOrder || submissionBlocked} className="shrink-0">
                 <Search aria-hidden className="size-4" />
-                检索号码
+                {searching ? "获取中…" : "检索号码"}
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               请勿连续快速搜索；如暂时无法检索，可前往官网挑号。
             </p>
           </form>}
-          <a href="https://esim.gg" target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground underline underline-offset-4">前往 esim.gg 官网挑号 ↗</a>
+          <a href="https://esim.gg/new/number/vanity" target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground underline underline-offset-4">前往 esim.gg 官网挑号 ↗</a>
         </Card>}
 
         {error && (
