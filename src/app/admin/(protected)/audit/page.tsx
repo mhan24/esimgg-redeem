@@ -80,7 +80,6 @@ export default function AdminAuditPage() {
     <div className="space-y-5">
       <PageHeading
         title="审计日志"
-        description="记录后台操作、关联对象和请求来源。"
         action={
           <Button variant="secondary" onClick={() => void load()}>
             <RefreshCw aria-hidden className="size-4" /> 刷新
@@ -117,9 +116,7 @@ export default function AdminAuditPage() {
                       {a.targetId ? `:${a.targetId.slice(0, 8)}` : ""}
                     </td>
                     <td className="py-2.5 pr-3 text-xs text-muted-foreground">
-                      <pre className="max-w-md overflow-auto whitespace-pre-wrap break-all">
-                        {a.metadata ? JSON.stringify(a.metadata) : "-"}
-                      </pre>
+                      {a.metadata ? <details><summary className="cursor-pointer focus-visible:outline-2 focus-visible:outline-ring">查看详情</summary><pre className="mt-2 max-w-md overflow-auto whitespace-pre-wrap break-all">{JSON.stringify(a.metadata, null, 2)}</pre></details> : "-"}
                     </td>
                     <td className="py-2.5 text-xs text-muted-foreground">{a.ip ?? "-"}</td>
                   </tr>

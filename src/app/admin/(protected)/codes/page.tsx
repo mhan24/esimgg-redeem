@@ -15,6 +15,7 @@ import {
   Input,
   Label,
   StatusBadge,
+  getStatusLabel,
   PageHeading,
 } from "@/components/ui";
 import {
@@ -182,7 +183,6 @@ export default function AdminCodesPage() {
     <div className="space-y-5">
       <PageHeading
         title="卡密管理"
-        description="生成兑换卡密并管理状态、批次和导出。"
         action={
           <Button variant="secondary" onClick={() => void load()}>
             <RefreshCw aria-hidden className="size-4" /> 刷新
@@ -205,7 +205,7 @@ export default function AdminCodesPage() {
               onBlur={() => setManualCount(value => value === null ? null : String(Math.max(1, Number(value))))}
               aria-describedby="count-hint"
             />
-            <p id="count-hint" className="mt-2 text-xs text-muted-foreground">按余额推荐数量预填，最低 1 张，单次最多 1000 张，可手动修改。</p>
+            <p id="count-hint" className="mt-2 text-xs text-muted-foreground">按余额预填，支持 1-1000 张。</p>
           </div>
           <div>
             <Label htmlFor="prefix">前缀</Label>
@@ -219,7 +219,7 @@ export default function AdminCodesPage() {
             />
           </div>
           <div>
-            <Label htmlFor="expires">有效期（天，空=永久）</Label>
+            <Label htmlFor="expires">有效期（天）</Label>
             <Input
               id="expires"
               inputMode="numeric"
@@ -234,7 +234,7 @@ export default function AdminCodesPage() {
               id="remark"
               value={remark}
               onChange={(e) => setRemark(e.target.value)}
-              placeholder="独角第一批"
+              placeholder="可选备注"
             />
           </div>
           <div className="sm:col-span-2 lg:col-span-4">
@@ -248,7 +248,7 @@ export default function AdminCodesPage() {
           <div className="mt-4 rounded-xl border border-border bg-muted/50 p-3">
             <div className="mb-2 flex items-center justify-between">
               <p className="text-xs font-medium text-muted-foreground">
-                本次生成（仅显示一次，请及时导出）
+                本次生成，可复制或导出
               </p>
               <div className="flex gap-2">
                 <a
@@ -292,7 +292,7 @@ export default function AdminCodesPage() {
             >
               {STATUS_OPTIONS.map((s) => (
                 <option key={s} value={s}>
-                  {s || "全部"}
+                  {s ? getStatusLabel(s) : "全部"}
                 </option>
               ))}
             </select>

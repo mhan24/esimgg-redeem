@@ -20,6 +20,7 @@ import { SiteOperationsSettings } from "@/components/SiteOperationsSettings";
 import { TelegramSettings } from "@/components/TelegramSettings";
 import { ApiKeyManager } from "@/components/ApiKeyManager";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface SettingsData {
   siteName: string;
@@ -136,29 +137,31 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="w-full space-y-5">
       <PageHeading
         title="系统设置"
-        description="配置号码类型、价格边界和平台 API 凭证。"
       />
       {error && <Alert kind="error">{error}</Alert>}
       {notice && <Alert kind="success">{notice}</Alert>}
 
-      <ApiKeyManager />
-      <SiteOperationsSettings />
-      <TelegramSettings />
-
-      <Card>
-        <h2 className="mb-3 text-sm font-semibold text-foreground">选号设置</h2>
-        <form onSubmit={onSaveSettings} className="space-y-4">
-          <div>
-            <Label htmlFor="site-name">站点名称</Label>
-            <Input
-              id="site-name"
-              value={siteName}
-              onChange={(e) => setSiteName(e.target.value)}
-            />
-          </div>
+      <Tabs defaultValue="site" className="gap-6">
+        <TabsList variant="line" className="min-h-12 w-full justify-start border-b border-border pb-2">
+          <TabsTrigger value="site" className="flex-none px-4">站点</TabsTrigger>
+          <TabsTrigger value="redeem" className="flex-none px-4">兑换</TabsTrigger>
+          <TabsTrigger value="keys" className="flex-none px-4">API Key</TabsTrigger>
+          <TabsTrigger value="notifications" className="flex-none px-4">通知</TabsTrigger>
+        </TabsList>
+        <TabsContent value="site" keepMounted><div className="space-y-5"><Card>
+          <form onSubmit={onSaveSettings} className="space-y-4">
+            <div><Label htmlFor="site-name">站点名称</Label><Input id="site-name" value={siteName} onChange={e => setSiteName(e.target.value)} /></div>
+            <Button type="submit" loading={saving}>保存名称</Button>
+          </form>
+        </Card><SiteOperationsSettings /></div></TabsContent>
+        <TabsContent value="keys" keepMounted><div className="space-y-5"><ApiKeyManager /></div></TabsContent>
+        <TabsContent value="notifications" keepMounted><TelegramSettings /></TabsContent>
+        <TabsContent value="redeem" keepMounted><Card>
+        <h2 className="text-base font-semibold text-foreground">兑换规则</h2>
+        <form onSubmit={onSaveSettings} className="grid gap-5 sm:grid-cols-2">
           <div>
             <Label htmlFor="initial-balance">初始余额（EUR）</Label>
             <Input
@@ -168,8 +171,7 @@ export default function AdminSettingsPage() {
               onChange={(e) => setInitialBalance(e.target.value)}
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              购买号码时初始化的账户余额。esim.gg 标准最低 1.00 EUR，账户可能存在专属最低值；
-              若 API 拒绝该金额，真实错误会记录到订单日志。
+              号码开通后的初始余额。最低金额以该账户的官方规则为准。
             </p>
           </div>
           <div>
@@ -215,12 +217,11 @@ export default function AdminSettingsPage() {
               <option value="asia">Asia</option>
             </select>
           </div>
-          <WalletCostEstimate numberPrice="0.00" initialBalance={initialBalance} />
-          <Button type="submit" loading={saving}>
-            保存
-          </Button>
+          <div className="sm:col-span-2"><WalletCostEstimate numberPrice="0.00" initialBalance={initialBalance} /></div>
+          <div className="sm:col-span-2"><Button type="submit" loading={saving}>保存兑换规则</Button></div>
         </form>
-      </Card>
+      </Card></TabsContent>
+      </Tabs>
     </div>
   );
 }

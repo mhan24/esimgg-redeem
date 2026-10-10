@@ -21,11 +21,11 @@ export default async function AdminProtectedLayout({
   }
 
   return (
-    <SidebarProvider defaultOpen className="min-h-svh w-full">
+    <SidebarProvider defaultOpen className="admin-shell min-h-dvh w-full">
       <AdminNav username={session.username} />
       <SidebarInset className="min-h-svh min-w-0">
         <AdminTopbar />
-        <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-9">
+        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-8">
           {children}
         </main>
       </SidebarInset>

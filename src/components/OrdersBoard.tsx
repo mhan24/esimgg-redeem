@@ -17,6 +17,7 @@ import {
   Label,
   PageHeading,
   StatusBadge,
+  getStatusLabel,
   formatMsisdn,
 } from "@/components/ui";
 import {
@@ -178,7 +179,7 @@ export function OrdersBoard({ mode }: { mode: "all" | "exceptions" }) {
         setError(data.message ?? "重试失败");
         return;
       }
-      setNotice(`转移成功，订单状态：${data.status}`);
+      setNotice(`转移成功，订单状态：${getStatusLabel(data.status)}`);
       await load();
       await openDetail(detail.id);
     } catch {
@@ -203,7 +204,7 @@ export function OrdersBoard({ mode }: { mode: "all" | "exceptions" }) {
         setError(data.message ?? "对账失败");
         return;
       }
-      setNotice(`对账完成，订单状态：${data.status}`);
+      setNotice(`对账完成，订单状态：${getStatusLabel(data.status)}`);
       await load();
       await openDetail(detail.id);
     } catch {
@@ -219,7 +220,6 @@ export function OrdersBoard({ mode }: { mode: "all" | "exceptions" }) {
     <div className="space-y-5">
       <PageHeading
         title={mode === "exceptions" ? "异常订单" : "订单管理"}
-        description={mode === "exceptions" ? "查看待核实购买和转移失败的订单。" : "跟踪号码购买、转移和交付状态。"}
         action={
           <Button variant="secondary" onClick={() => void load()}>
             <RefreshCw aria-hidden className="size-4" /> 刷新
@@ -229,8 +229,7 @@ export function OrdersBoard({ mode }: { mode: "all" | "exceptions" }) {
 
       {mode === "exceptions" && (
         <Alert kind="info">
-          重点处理：购买结果待核实（PURCHASE_UNCERTAIN）与转移失败（TRANSFER_FAILED）。
-          转移失败仅支持修改邮箱 / 账户 ID 后重新转移，禁止重新购买。
+          购买结果待核实的订单请先对账；转移失败可修改接收账号后重试，不会重新购买号码。
         </Alert>
       )}
 
@@ -253,7 +252,7 @@ export function OrdersBoard({ mode }: { mode: "all" | "exceptions" }) {
               >
                 {STATUS_OPTIONS.map((s) => (
                   <option key={s} value={s}>
-                    {s || "全部"}
+                    {s ? getStatusLabel(s) : "全部"}
                   </option>
                 ))}
               </select>

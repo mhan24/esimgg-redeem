@@ -254,19 +254,15 @@ export function ApiKeyManager() {
 
       <Card>
         <h2 className="mb-3 text-sm font-semibold text-foreground">
-          esim.gg API Key 管理
+          API Key
         </h2>
-        <p className="mb-3 text-xs text-muted-foreground">已启用 Key 的余额由服务器每 5 分钟检测，页面每 30 秒更新显示。检测失败会保留上次成功余额与时间。</p>
-        <div className="mb-3 rounded-xl bg-muted/50 px-4 py-3 text-xs text-muted-foreground">
-          支持多个 Key。购买时按策略选用，余额不足自动切换到下一个 Key；
-          同一个订单的购买与转移固定使用同一个 Key。
-          Key 加密保存于服务端，不会发送到浏览器。
-        </div>
+        <p className="mb-3 text-xs text-muted-foreground">余额约每 5 分钟检测，列表每 30 秒更新。</p>
+
 
         <form onSubmit={onSaveStrategy} className="mb-4 space-y-3">
           <div>
             <p className="mb-1.5 text-sm font-medium text-foreground">调用策略</p>
-            <div className="flex gap-6">
+            <div className="flex flex-wrap gap-6">
               <label className="flex items-center gap-2 text-sm text-muted-foreground">
                 <input
                   type="radio"
@@ -276,7 +272,7 @@ export function ApiKeyManager() {
                   onChange={(e) => setStrategy(e.target.value)}
                   className="h-4 w-4"
                 />
-                按顺序调用（从第一个到最后一个，余额不足就下一个）
+                按顺序
               </label>
               <label className="flex items-center gap-2 text-sm text-muted-foreground">
                 <input
@@ -287,11 +283,11 @@ export function ApiKeyManager() {
                   onChange={(e) => setStrategy(e.target.value)}
                   className="h-4 w-4"
                 />
-                随机调用
+                随机
               </label>
             </div>
           </div>
-          <div className="flex items-end gap-3">
+          <div className="flex flex-wrap items-end gap-3">
             <div className="w-48">
               <Label htmlFor="low-balance">低余额预警阈值（EUR）</Label>
               <Input

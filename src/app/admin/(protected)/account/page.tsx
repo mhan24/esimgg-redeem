@@ -134,10 +134,9 @@ export default function AdminAccountPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="w-full max-w-3xl space-y-5">
       <PageHeading
         title="账号设置"
-        description="更新管理员用户名和密码。"
       />
       {error && <Alert kind="error">{error}</Alert>}
       {notice && <Alert kind="success">{notice}</Alert>}

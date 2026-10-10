@@ -65,9 +65,8 @@ export default function AdminLoginPage() {
             <LockKeyhole aria-hidden className="size-5" />
           </span>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">管理员登录</h1>
-          <p className="mt-2 text-sm text-muted-foreground">登录以管理兑换码、订单和系统设置。</p>
         </div>
-        <Card className="gap-5 rounded-2xl shadow-sm ring-border/90">
+        <Card className="gap-5 rounded-2xl shadow-none">
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
               <Label htmlFor="username">用户名</Label>

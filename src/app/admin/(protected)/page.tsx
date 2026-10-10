@@ -61,7 +61,7 @@ function Stat({
   hint?: string;
 }) {
   return (
-    <div className="rounded-xl bg-card p-4 shadow-xs ring-1 ring-border/80">
+    <div className="min-w-0 px-4 py-5">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-1.5 text-2xl font-semibold tracking-tight text-foreground">{value}</p>
       {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
@@ -123,11 +123,9 @@ export default function AdminDashboard() {
   if (!data) return null;
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
       <PageHeading
-        eyebrow="Overview"
         title="运营概览"
-        description="快速查看余额、兑换进度与需要处理的订单。"
         action={
           <Button variant="secondary" onClick={() => { void reload(); }} loading={loading}>
             <RefreshCw aria-hidden className="size-4" />
@@ -138,32 +136,9 @@ export default function AdminDashboard() {
 
       <BalanceCoverage />
 
-      <Card>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm text-muted-foreground">当前选用 Key 钱包余额</p>
-            {data.wallet ? (
-              <p className="mt-1 text-2xl font-bold text-foreground">
-                €{data.wallet.balance.toFixed(2)}
-              </p>
-            ) : (
-              <p className="mt-1 text-sm text-warning-foreground">
-                {data.walletError ?? "无法获取余额"}
-              </p>
-            )}
-          </div>
-          <Link
-            href="/admin/settings"
-            className="text-sm text-primary hover:underline"
-          >
-            前往配置 API Key →
-          </Link>
-        </div>
-      </Card>
-
       <section>
         <h2 className="mb-3 text-sm font-semibold text-foreground">卡密</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="admin-stats-grid grid grid-cols-2 gap-0 sm:grid-cols-3 lg:grid-cols-6">
           <Stat label="总数" value={data.codes.total} />
           <Stat label="未使用" value={data.codes.unused} />
           <Stat label="已锁定" value={data.codes.locked} />
@@ -175,7 +150,7 @@ export default function AdminDashboard() {
 
       <section>
         <h2 className="mb-3 text-sm font-semibold text-foreground">订单</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="admin-stats-grid grid grid-cols-2 gap-0 sm:grid-cols-3 lg:grid-cols-5">
           <Stat label="订单总数" value={data.orders.total} />
           <Stat label="今日订单" value={data.orders.today} />
           <Stat label="转移成功" value={data.orders.completed} />
@@ -186,7 +161,7 @@ export default function AdminDashboard() {
 
       <section>
         <h2 className="mb-3 text-sm font-semibold text-foreground">支出</h2>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="admin-stats-grid grid grid-cols-2 gap-0 lg:grid-cols-4">
           <Stat
             label="官方实付成本"
             value={`€${Number(data.amounts.actualCost ?? 0).toFixed(2)}`}
@@ -195,19 +170,19 @@ export default function AdminDashboard() {
           <Stat
             label="预估成本合计"
             value={`€${Number(data.amounts.estimatedCost ?? 0).toFixed(2)}`}
-            hint="号码价格 + 初始余额"
+            hint="按当前优惠估算"
           />
           <Stat
             label="号码购买金额"
             value={`€${Number(data.amounts.numberPurchase).toFixed(2)}`}
           />
           <Stat
-            label="初始化余额支出"
+            label="初始余额支出"
             value={`€${Number(data.amounts.initialBalanceSpend).toFixed(2)}`}
           />
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          实付成本取自 esim.gg 购买接口返回的 total_price，与预估值可能不同（优惠券、价格变动等）。
+          实付以官方结算为准，优惠和税费可能造成差异。
         </p>
       </section>
 

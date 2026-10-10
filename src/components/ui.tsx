@@ -203,6 +203,10 @@ const statusLabels: Record<string, string> = {
   FAILED: "失败",
 };
 
+export function getStatusLabel(status: string): string {
+  return statusLabels[status] ?? status;
+}
+
 export function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, string> = {
     UNUSED: "bg-muted text-muted-foreground",
@@ -225,7 +229,7 @@ export function StatusBadge({ status }: { status: string }) {
       title={status}
       className={cn("border-transparent font-medium", variants[status] ?? "bg-muted text-muted-foreground")}
     >
-      {statusLabels[status] ?? status}
+      {getStatusLabel(status)}
     </Badge>
   );
 }

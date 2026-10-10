@@ -20,7 +20,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -28,14 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+
 
 const NAV = [
   { href: "/admin", label: "仪表盘", icon: LayoutDashboard },
@@ -83,9 +75,6 @@ export function AdminNav({ username }: { username: string }) {
 
       <SidebarContent className="px-3 py-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-2 text-[0.68rem] font-medium uppercase tracking-[0.14em] text-sidebar-foreground/55">
-            工作台
-          </SidebarGroupLabel>
           <SidebarMenu>
             {NAV.map((item) => {
               const Icon = item.icon;
@@ -144,30 +133,11 @@ export function AdminNav({ username }: { username: string }) {
 }
 
 export function AdminTopbar() {
-  const pathname = usePathname();
-  const current = [...NAV, { href: "/admin/account", label: "账号设置", icon: UserRound }]
-    .find((item) => isCurrent(pathname, item.href));
-  const title = current?.label ?? "管理后台";
-
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border/80 bg-background/95 px-4 backdrop-blur md:px-7">
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-4 md:px-7">
       <SidebarTrigger className="size-9" aria-label="切换导航菜单" />
       <Separator orientation="vertical" className="h-5" />
-      <Breadcrumb>
-        <BreadcrumbList className="gap-2 text-sm">
-          <BreadcrumbItem className="hidden sm:inline-flex">
-            <BreadcrumbLink render={<Link href="/admin" />}>工作台</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator className="hidden sm:block" />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{title}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <div className="ml-auto hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
-        <span className="size-1.5 rounded-full bg-success" />
-        系统运行中
-      </div>
+      <Link href="/" target="_blank" rel="noopener noreferrer" className="ml-auto inline-flex min-h-10 items-center text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">打开前台 ↗</Link>
     </header>
   );
 }

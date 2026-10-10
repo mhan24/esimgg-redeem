@@ -46,8 +46,8 @@ export function TelegramSettings() {
   }
 
   return <Card>
-    <h2 className="mb-3 text-sm font-semibold text-foreground">Telegram 卡密使用通知</h2>
-    <p className="mb-4 text-sm text-muted-foreground">卡密成功兑换、号码转移完成后发送通知。内容包含订单 ID、卡密 ID、号码尾号、金额和完成时间。</p>
+    <h2 className="mb-3 text-sm font-semibold text-foreground">Telegram 通知</h2>
+    <p className="mb-4 text-sm text-muted-foreground">卡密兑换并完成转移后发送通知。</p>
     {loading ? <Spinner label="加载通知配置…" /> : <form className="space-y-4" onSubmit={(e: FormEvent) => { e.preventDefault(); void submit(false); }}>
       {error && <Alert kind="error">{error}</Alert>}
       {notice && <Alert kind="success">{notice}</Alert>}
@@ -56,7 +56,7 @@ export function TelegramSettings() {
         <div>
           <Label htmlFor="telegram-token">机器人 Token</Label>
           <Input id="telegram-token" type="password" autoComplete="new-password" value={token} onChange={(e) => { setToken(e.target.value); setDirty(true); }} placeholder={configured ? "已配置，留空保留原 Token" : "从 @BotFather 获取"} />
-          <p className="mt-1 text-xs text-muted-foreground">Token 加密保存。修改机器人时填写新的 Token。</p>
+          <p className="mt-1 text-xs text-muted-foreground">修改机器人时填写新的 Token。</p>
         </div>
         <div>
           <Label htmlFor="telegram-chat">目标频道或群组 Chat ID</Label>

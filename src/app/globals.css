@@ -197,3 +197,42 @@
   outline-offset: 4px;
   border-radius: var(--radius-sm);
 }
+
+/* Admin surfaces: compact navigation, grouped metrics and readable tables. */
+.admin-shell [data-slot="card"] {
+  border: 1px solid var(--border);
+  box-shadow: none;
+  --tw-ring-shadow: 0 0 #0000;
+  gap: 1.25rem;
+}
+.admin-shell h2 {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.admin-shell table {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+.admin-shell th {
+  padding: 0.75rem;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.admin-shell td {
+  padding: 0.875rem 0.75rem;
+  vertical-align: middle;
+}
+.admin-shell tbody tr:hover {
+  background: color-mix(in oklch, var(--muted) 45%, transparent);
+}
+.admin-shell .admin-stats-grid {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+}
+.admin-shell .admin-stats-grid > div {
+  border-inline-end: 1px solid var(--border);
+}
