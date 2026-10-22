@@ -1,4 +1,6 @@
 "use client";
+
+import { PublicButton as Button } from "@/components/arc/public-button";
 import { NumberSelectionGuide } from "@/components/NumberSelectionGuide";
 import { usePublicSiteSettings } from "@/components/PublicSiteNotice";
 
@@ -10,7 +12,6 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Search } from "lucide-react";
 import {
   Alert,
-  Button,
   Card,
   Input,
   Label,
@@ -86,10 +87,10 @@ export default function RedeemPage() {
           });
           if (res.status === 401) return { redirect: "/" };
           const data = await res.json();
-          if (!res.ok) return { settings, error: data.message ?? "暂时无法获取号码，请稍后手动检索或前往官网挑号。" };
+          if (!res.ok) return { settings, error: data.message ?? "暂时无法获取号码，请稍后重试，或到官网选号。" };
           return { settings, numbers: data.numbers ?? [] };
         } catch {
-          return { settings, error: "暂时无法获取号码，请检查网络后手动检索。" };
+          return { settings, error: "暂时无法获取号码，请检查网络后重试。" };
         }
       })();
     }
@@ -99,7 +100,7 @@ export default function RedeemPage() {
       if (data.settings) setSettings(data.settings);
       if (data.numbers) {
         setNumbers(data.numbers);
-        if (data.numbers.length === 0) setNotice("暂时没有可兑换号码，可稍后检索或前往官网挑号。");
+        if (data.numbers.length === 0) setNotice("暂时没有可兑换的号码。请稍后再查找，或到官网查看号源。");
       }
       if (data.error) setError(data.error);
       setSubmissionBlocked(data.blocked ?? false);
@@ -132,7 +133,7 @@ export default function RedeemPage() {
         return;
       }
       if (!res.ok) {
-        setError(data.message ?? "暂时无法检索号码，请稍后重试或前往官网挑号");
+        setError(data.message ?? "暂时无法查找号码，请稍后重试或前往官网挑号");
         setNumbers([]);
         return;
       }
@@ -222,47 +223,47 @@ export default function RedeemPage() {
     <PublicShell>
       <main className="w-full max-w-2xl">
         <div className="mb-8 space-y-3">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{selected ? "确认兑换并转移" : "挑选你的 eSIM 号码"}</h1>
-          {!selected && settings && <p className="text-sm leading-6 text-muted-foreground">当前卡密含 1 个{settings.allowPaidNumbers ? "可兑换" : "官方免费基础"}号码及 €{Number(settings.initialBalance).toFixed(2)} 初始余额。</p>}
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{selected ? "确认兑换" : "选择号码"}</h1>
+          {!selected && settings && <p className="text-sm leading-6 text-muted-foreground">卡密可兑换 1 个{settings.allowPaidNumbers ? "可兑换" : "免费基础"}号码及 €{Number(settings.initialBalance).toFixed(2)} 初始余额。</p>}
         </div>
 
         {!selected && <Card className="mb-4 gap-5 rounded-2xl shadow-none">
-          <div className="flex gap-1 rounded-xl bg-muted p-1.5" aria-label="选号方式">
+          <div className="selection-switch flex gap-1 rounded-xl bg-muted p-1.5" aria-label="选号方式">
             <Button type="button" variant={selectionMode === "direct" ? "secondary" : "ghost"} aria-pressed={selectionMode === "direct"} disabled={searching || submitting} onClick={() => setSelectionMode("direct")} className="h-11 flex-1 rounded-lg">精准输入</Button>
             <Button type="button" variant={selectionMode === "search" ? "secondary" : "ghost"} aria-pressed={selectionMode === "search"} disabled={searching || submitting} onClick={() => setSelectionMode("search")} className="h-11 flex-1 rounded-lg">在线检索</Button>
           </div>
           {selectionMode === "direct" && <form onSubmit={onSelectTarget} className="space-y-3">
-            <Label htmlFor="target-number">目标号码（含国家区号）</Label>
+            <Label htmlFor="target-number">完整号码（含国家区号）</Label>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input id="target-number" inputMode="tel" autoComplete="off" value={targetNumber} onChange={e => setTargetNumber(e.target.value)} maxLength={40} placeholder="例如 +372 5123 4567" className="h-12 font-code" />
-              <Button type="submit" loading={searching} disabled={!targetNumber.trim() || siteSettings?.redemptionPaused || submitting || checkingOrder || submissionBlocked} className="h-12 shrink-0">核验此号码</Button>
+              <Button type="submit" loading={searching} disabled={!targetNumber.trim() || siteSettings?.redemptionPaused || submitting || checkingOrder || submissionBlocked} className="h-12 shrink-0">检查号码</Button>
             </div>
-            <p className="text-xs text-muted-foreground">支持加号和空格，系统会核验库存与资费；提交订单前不保留号码。</p>
+            <p className="text-xs text-muted-foreground">可直接粘贴带加号或空格的号码。检查通过不代表号码已预留。</p>
           </form>}
           {selectionMode === "search" && <form onSubmit={doSearch}>
-            <Label htmlFor="search">搜索号段或特征码</Label>
-            <div className="flex gap-2">
+            <Label htmlFor="search">想找哪些数字？</Label>
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Input
                 id="search"
                 inputMode="numeric"
                 autoComplete="off"
-                placeholder="留空获取随机号码，或输入 2-15 位数字"
+                placeholder="留空随机选号，或输入 2–15 位数字"
                 className="h-12 font-code"
                 value={search}
                 onChange={(e) =>
                   setSearch(e.target.value.replace(/\D/g, "").slice(0, 15))
                 }
               />
-              <Button type="submit" loading={searching} disabled={siteSettings?.redemptionPaused || submitting || checkingOrder || submissionBlocked} className="shrink-0">
+              <Button type="submit" loading={searching} disabled={siteSettings?.redemptionPaused || submitting || checkingOrder || submissionBlocked} className="h-12 shrink-0">
                 <Search aria-hidden className="size-4" />
-                {searching ? "获取中…" : "检索号码"}
+                {searching ? "获取中…" : "查找号码"}
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              请勿连续快速搜索；如暂时无法检索，可前往官网挑号。
+              两次查找请间隔几秒。也可先到官网选号，再用「精准输入」检查。
             </p>
           </form>}
-          <a href="https://esim.gg/new/number/vanity" target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground underline underline-offset-4">前往 esim.gg 官网挑号 ↗</a>
+          <a href="https://esim.gg/new/number/vanity" target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground underline underline-offset-4">到官网选号 ↗</a>
         </Card>}
 
         {error && (
@@ -323,11 +324,11 @@ export default function RedeemPage() {
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">号码资费</dt>
+                <dt className="text-muted-foreground">选号附加费</dt>
                 <dd className="font-medium">{formatPrice(selected.price)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">内置初始余额</dt>
+                <dt className="text-muted-foreground">初始余额</dt>
                 <dd className="font-medium">
                   €{Number(settings?.initialBalance ?? 0.5).toFixed(2)}
                 </dd>
@@ -335,12 +336,12 @@ export default function RedeemPage() {
             </dl>
             <form onSubmit={onConfirm} className="space-y-4">
               <div>
-                <Label htmlFor="userid">接收方账号（推荐 UserID）</Label>
+                <Label htmlFor="userid">接收账户</Label>
                 <Input
                   id="userid"
                   autoComplete="off"
                   spellCheck={false}
-                  placeholder="cm 开头的 UserID 或已注册账户邮箱"
+                  placeholder="UserID（推荐）或 esim.gg 登录邮箱"
                   className="h-12 font-code"
                   value={recipient}
                   onChange={(e) => setRecipient(e.target.value.trim())}
@@ -350,7 +351,7 @@ export default function RedeemPage() {
               <UseridGuide />
 
 
-              {submitting && <Alert kind="info">正在采购号码并转移至你的账户，请保持网络连接，勿重复提交。完成后将自动打开订单页。</Alert>}
+              {submitting && <Alert kind="info">正在为你开通并转移号码，请勿重复提交。完成后会自动显示订单。</Alert>}
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -359,7 +360,7 @@ export default function RedeemPage() {
                   disabled={submitting}
                   className="h-12 flex-1"
                 >
-                  返回重选
+                  重新选号
                 </Button>
                 <Button
                   type="submit"
@@ -367,7 +368,7 @@ export default function RedeemPage() {
                   disabled={!recipient.trim() || siteSettings?.redemptionPaused || checkingOrder || submissionBlocked}
                   className="h-12 flex-1"
                 >
-                  {submitting ? "正在采购并转移…" : checkingOrder ? "正在同步订单状态…" : "确认兑换并转移"}
+                  {submitting ? "正在办理…" : checkingOrder ? "正在读取订单…" : "确认兑换"}
                 </Button>
               </div>
             </form>

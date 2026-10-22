@@ -44,7 +44,7 @@ export function purchaseErrorMessage(err: EsimApiError | null): FriendlyError {
   if (err.kind === "uncertain") {
     return {
       code: "PURCHASE_UNCERTAIN",
-      message: "正在核验官方购买结果，结果确认前不会再次购买。请稍后刷新订单状态或联系客服。",
+      message: "购买结果暂未确认，请联系客服核实。确认前不会重复购买号码。",
     };
   }
   return { code: "PURCHASE_FAILED", message: "号码未能成功购买，请重新选号；如持续失败，请联系客服。" };

@@ -22,18 +22,11 @@ export function UseridGuide() {
           </a>
           ，登录后点击右上角头像
         </li>
-        <li>电脑端：将鼠标移到邮箱地址上，按住鼠标左键长按。</li>
-        <li>手机端：用单指长按邮箱地址。</li>
-        <li>复制显示的 cm 开头的 UserID，并完整粘贴到接收账号输入框。</li>
+        <li>长按账户中的邮箱：电脑按住鼠标左键，手机用单指长按。</li>
+        <li>复制显示的 cm 开头的 UserID，粘贴到「接收账户」。</li>
       </ol>
 
-      <p className="mb-1.5 mt-3 font-semibold text-foreground">
-        为什么推荐 UserID？
-      </p>
-      <ol className="list-decimal space-y-0.5 pl-4">
-        <li>UserID 是账号的唯一标识，有助于准确定位接收账号。</li>
-        <li>使用第三方登录时，请以实际登录账户显示的 UserID 为准，避免邮箱关联混淆。</li>
-      </ol>
+      <p className="mt-3 leading-6">UserID 能准确对应你的账户。尤其使用第三方登录时，建议直接复制，避免邮箱对应多个账户而无法转移。</p>
 
       <div className="mt-3 overflow-hidden rounded-lg border border-border bg-card">
         <Image

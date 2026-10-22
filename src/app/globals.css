@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "../components/arc/foundation.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -61,20 +62,20 @@
     "Microsoft YaHei", sans-serif;
   --font-code: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     monospace;
-  --background: oklch(0.978 0.004 250);
-  --foreground: oklch(0.19 0.018 255);
+  --background: #f5f3ef;
+  --foreground: #242321;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.19 0.018 255);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.19 0.018 255);
-  --primary: oklch(0.44 0.105 190);
-  --primary-foreground: oklch(0.99 0.004 190);
+  --primary: #3155d9;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.95 0.008 255);
   --secondary-foreground: oklch(0.25 0.018 255);
   --muted: oklch(0.955 0.007 255);
   --muted-foreground: oklch(0.49 0.018 255);
-  --accent: oklch(0.93 0.035 190);
-  --accent-foreground: oklch(0.27 0.075 190);
+  --accent: #e7ecff;
+  --accent-foreground: #2745ac;
   --destructive: oklch(0.53 0.21 27.5);
   --success: oklch(0.43 0.13 154);
   --success-foreground: oklch(0.31 0.09 154);
@@ -84,39 +85,39 @@
   --info-foreground: oklch(0.34 0.09 245);
   --border: oklch(0.9 0.008 255);
   --input: oklch(0.87 0.01 255);
-  --ring: oklch(0.54 0.1 190);
+  --ring: #3155d9;
   --chart-1: oklch(0.54 0.13 190);
   --chart-2: oklch(0.64 0.12 152);
   --chart-3: oklch(0.67 0.13 80);
   --chart-4: oklch(0.58 0.13 245);
   --chart-5: oklch(0.62 0.15 25);
   --radius: 0.7rem;
-  --sidebar: oklch(0.205 0.022 255);
+  --sidebar: #22242a;
   --sidebar-foreground: oklch(0.955 0.008 255);
-  --sidebar-primary: oklch(0.76 0.13 184);
-  --sidebar-primary-foreground: oklch(0.2 0.025 255);
-  --sidebar-accent: oklch(0.29 0.026 255);
+  --sidebar-primary: #b7c6ff;
+  --sidebar-primary-foreground: #171c30;
+  --sidebar-accent: #30343e;
   --sidebar-accent-foreground: oklch(0.97 0.005 255);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.72 0.12 188);
+  --sidebar-ring: #a2b6ff;
 }
 
 .dark {
   color-scheme: dark;
-  --background: oklch(0.16 0.018 255);
-  --foreground: oklch(0.96 0.006 255);
+  --background: #17181b;
+  --foreground: #f3f2ef;
   --card: oklch(0.205 0.02 255);
   --card-foreground: oklch(0.96 0.006 255);
   --popover: oklch(0.22 0.02 255);
   --popover-foreground: oklch(0.96 0.006 255);
-  --primary: oklch(0.74 0.12 185);
-  --primary-foreground: oklch(0.17 0.03 190);
+  --primary: #a2b6ff;
+  --primary-foreground: #171c30;
   --secondary: oklch(0.27 0.02 255);
   --secondary-foreground: oklch(0.95 0.006 255);
   --muted: oklch(0.25 0.02 255);
   --muted-foreground: oklch(0.71 0.015 255);
-  --accent: oklch(0.29 0.04 190);
-  --accent-foreground: oklch(0.92 0.035 190);
+  --accent: #30394f;
+  --accent-foreground: #d2dcff;
   --destructive: oklch(0.67 0.18 25);
   --success: oklch(0.74 0.12 155);
   --success-foreground: oklch(0.82 0.1 155);
@@ -126,20 +127,20 @@
   --info-foreground: oklch(0.82 0.08 245);
   --border: oklch(1 0 0 / 11%);
   --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.68 0.1 188);
+  --ring: #a2b6ff;
   --chart-1: oklch(0.72 0.13 190);
   --chart-2: oklch(0.76 0.12 152);
   --chart-3: oklch(0.79 0.13 80);
   --chart-4: oklch(0.73 0.13 245);
   --chart-5: oklch(0.72 0.15 25);
-  --sidebar: oklch(0.13 0.018 255);
+  --sidebar: #131417;
   --sidebar-foreground: oklch(0.95 0.006 255);
-  --sidebar-primary: oklch(0.74 0.12 185);
-  --sidebar-primary-foreground: oklch(0.17 0.03 190);
-  --sidebar-accent: oklch(0.24 0.025 255);
+  --sidebar-primary: #a2b6ff;
+  --sidebar-primary-foreground: #171c30;
+  --sidebar-accent: #292c34;
   --sidebar-accent-foreground: oklch(0.95 0.006 255);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.68 0.1 188);
+  --sidebar-ring: #a2b6ff;
 }
 
 @layer base {
@@ -173,29 +174,64 @@
   }
 }
 
-/* Public redemption surfaces share one compact shape and interaction system. */
-.public-shell [data-slot="card"] {
-  border: 1px solid var(--border);
-  box-shadow: none;
-  --tw-ring-shadow: 0 0 #0000;
+/* Arc roles bridge the copied components to the existing shadcn controls. */
+.public-shell {
+  --background: #f5f3ef; --foreground: #242321;
+  --surface: #fffefa; --surface-raised: #fffefa; --surface-muted: #eeece7;
+  --card: var(--surface); --card-foreground: var(--foreground);
+  --popover: var(--surface-raised); --popover-foreground: var(--foreground);
+  --text-secondary: #68655f; --text-muted: #716d66;
+  --muted: var(--surface-muted); --muted-foreground: var(--text-secondary);
+  --primary: #3155d9; --primary-foreground: #ffffff;
+  --secondary: var(--surface-muted); --secondary-foreground: var(--foreground);
+  --accent: #3155d9; --accent-foreground: #fffefa;
+  --border: #dedbd4; --border-subtle: #e9e6df; --border-strong: #aca79d;
+  --input: #c8c3b9; --ring: #3155d9;
+  --radius-control: .875rem; --radius-panel: 1.25rem; --radius-surface: 1.75rem; --radius: .75rem;
+  --font-body: var(--font-family); --font-display: var(--font-family);
 }
-.public-shell [data-slot="button"] {
-  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+.dark .public-shell {
+  --background: #17181b; --foreground: #f3f2ef;
+  --surface: #202125; --surface-raised: #28292e; --surface-muted: #2b2c31;
+  --text-secondary: #b6b5b1; --text-muted: #a6a39e;
+  --primary: #a2b6ff; --primary-foreground: #171c30;
+  --accent: #a2b6ff; --accent-foreground: #171c30;
+  --border: #393a40; --border-subtle: #303137; --border-strong: #62636b;
+  --input: #5b5c63; --ring: #a2b6ff;
 }
-.public-shell [data-slot="button"]:active:not(:disabled) {
-  transform: scale(0.98);
-}
-.public-shell details {
-  border-radius: var(--radius-lg);
-}
-.public-shell summary {
-  min-height: 2.75rem;
-  align-content: center;
-}
-.public-shell summary:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 4px;
-  border-radius: var(--radius-sm);
+.public-header { min-height: 6rem; }
+.public-mark { background: var(--foreground); color: var(--background); border-radius: 50%; }
+.public-header nav { border: 1px solid var(--border); background: var(--surface); padding: .25rem .375rem .25rem 1rem; border-radius: var(--radius-pill); }
+.public-header nav a { font-size: .75rem; }
+.public-content { padding-block: 3.5rem 5rem; }
+.redemption-entry { max-width: 34rem; margin-inline: auto; gap: 2rem; }
+.entry-intro { text-align: center; }
+.entry-heading { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.28; letter-spacing: -.045em; text-wrap: balance; }
+.entry-heading > span { display: block; margin-top: .125em; color: var(--foreground); }
+.entry-intro > p { margin-inline: auto; }
+.entry-balance { display: inline-flex; gap: .75rem; align-items: center; padding: .5rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--surface); }
+.public-shell [data-slot="card"] { border: 1px solid var(--border); border-radius: var(--radius-surface); box-shadow: none; --tw-ring-shadow: 0 0 #0000; }
+.public-shell .entry-form { padding: 2rem; box-shadow: 0 12px 36px -28px #24232130; }
+.public-shell [data-slot="input"] { border-radius: var(--radius-control); background: var(--background); box-shadow: none; transition: border-color 160ms ease, box-shadow 160ms ease; }
+.public-shell [data-slot="input"]::placeholder { color: var(--text-muted); opacity: 1; }
+.public-shell .arc-public-button { min-height: 2.75rem; font-family: var(--font-body); }
+.public-shell .arc-public-button:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+.public-shell .entry-submit { min-height: 3.25rem; width: 100%; }
+.public-shell .selection-switch { border-radius: var(--radius-control); background: var(--surface-muted); padding: .25rem; }
+.public-shell .selection-switch [aria-pressed="true"] { background: var(--surface); color: var(--primary); border-color: var(--border); box-shadow: var(--shadow-resting); }
+.public-shell .selection-switch [aria-pressed="false"] { color: var(--text-secondary); }
+.public-shell .selection-switch button { border-radius: .625rem; }
+.public-shell summary { min-height: 2.75rem; align-content: center; }
+.public-shell summary:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; border-radius: .375rem; }
+.public-footer { border-color: var(--border); }
+.public-shell details { border-radius: var(--radius-panel); }
+@media (max-width: 639px) {
+  .public-header { flex-wrap: wrap; gap: .875rem; }
+  .public-header > a { flex: 1 1 auto; }
+  .public-header nav { width: 100%; justify-content: space-between; gap: .75rem; padding-inline-start: 1rem; }
+  .public-content { justify-content: flex-start; padding-block: 2rem 3rem; }
+  .public-shell .entry-form { padding: 1.5rem; border-radius: 1.5rem; }
+  .entry-heading { font-size: 2rem; }
 }
 
 /* Admin surfaces: compact navigation, grouped metrics and readable tables. */

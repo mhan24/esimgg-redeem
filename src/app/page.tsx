@@ -1,12 +1,14 @@
 "use client";
 
+import { PublicButton as Button } from "@/components/arc/public-button";
+
 /**
  * 首页: 输入兑换码 (规格 §19/§20; 人机验证 §69)
  */
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { Alert, Button, Card, Input, Label } from "@/components/ui";
+import { Alert, Card, Input, Label } from "@/components/ui";
 import { Turnstile } from "@/components/Turnstile";
 import { useTurnstile } from "@/components/TurnstileProvider";
 import { PublicShell } from "@/components/PublicShell";
@@ -33,7 +35,7 @@ export default function HomePage() {
     e.preventDefault();
     setError(null);
     if (!code.trim()) {
-      setError("请输入完整的兑换卡密");
+      setError("请输入购买时获得的完整卡密。");
       return;
     }
     if (turnstileEnabled && !turnstileToken) {
@@ -66,7 +68,7 @@ export default function HomePage() {
         router.push("/redeem");
       }
     } catch {
-      setError("网络连接异常，请检查网络后重试");
+      setError("暂时无法连接，请检查网络后重试。");
     } finally {
       setLoading(false);
     }
@@ -74,29 +76,30 @@ export default function HomePage() {
 
   return (
     <PublicShell>
-      <main className="grid w-full items-center gap-9 md:grid-cols-[1fr_1.05fr] md:gap-16 lg:gap-24">
-        <div className="space-y-5">
-          <h1 className="max-w-md text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">自助兑换你的 <span className="inline-block whitespace-nowrap text-primary">esim.gg 号码</span></h1>
-          <p className="max-w-sm text-sm leading-7 text-muted-foreground">输入卡密选号，官方线路自动转移至你的 esim.gg 账户。{settings?.initialBalance && <> 含 €{Number(settings.initialBalance).toFixed(2)} 初始余额。</>}</p>
+      <main className="redemption-entry grid w-full items-center">
+        <div className="entry-intro space-y-4">
+          <h1 className="entry-heading font-semibold tracking-tight">兑换你的<span className="block text-primary">esim.gg 号码</span></h1>
+          <p className="max-w-md text-sm leading-7 text-muted-foreground">选好号码，转入你的 esim.gg 账户。</p>
+          {settings?.initialBalance && <p className="entry-balance text-sm text-muted-foreground">初始余额 <span className="ml-2 font-code font-medium text-primary">€{Number(settings.initialBalance).toFixed(2)}</span></p>}
         </div>
-        <Card className="w-full gap-7 rounded-2xl p-6 shadow-none sm:p-9">
-          <p className="text-sm leading-6 text-muted-foreground">已兑换？输入原卡密查看订单进度。</p>
+        <Card className="entry-form w-full gap-7 p-6 sm:p-9">
           <form onSubmit={onSubmit} className="space-y-5">
             <div>
-              <Label htmlFor="code">兑换卡密</Label>
+              <Label htmlFor="code" className="mb-4 text-base font-semibold">卡密</Label>
               <Input
                 id="code"
                 name="code"
-                autoFocus
                 autoComplete="off"
                 spellCheck={false}
                 placeholder="ESIM-XXXX-XXXX-XXXX"
-                className="h-14 font-code text-base tracking-wide uppercase"
+                className="h-14 font-code text-sm tracking-wide uppercase sm:text-base"
                 value={code}
+                aria-invalid={!!error}
+                aria-describedby={error ? "code-error" : "code-help"}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
               />
             </div>
-            {error && <Alert kind="error">{error}</Alert>}
+            {error && <div id="code-error" role="alert"><Alert kind="error">{error}</Alert></div>}
             <Turnstile
               key={turnstileKey}
               onVerify={setTurnstileToken}
@@ -107,13 +110,13 @@ export default function HomePage() {
               type="submit"
               loading={loading}
               disabled={turnstileEnabled && !turnstileToken}
-              className="h-12 w-full justify-between px-4"
+              className="entry-submit"
             >
-              验证卡密并继续
+              验证并继续
               <ArrowRight aria-hidden className="size-4" />
             </Button>
           </form>
-
+          <p id="code-help" className="border-t border-border pt-5 text-xs leading-6 text-muted-foreground">已兑换的卡密也可在此查看订单。</p>
         </Card>
       </main>
     </PublicShell>

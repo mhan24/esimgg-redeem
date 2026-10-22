@@ -1,5 +1,7 @@
 "use client";
 
+import { PublicButton as Button } from "@/components/arc/public-button";
+
 /**
  * 订单状态页 (规格 §21/§50/§51)
  * - COMPLETED: 成功页
@@ -12,7 +14,6 @@ import { useRouter } from "next/navigation";
 import { CircleCheck } from "lucide-react";
 import {
   Alert,
-  Button,
   Card,
   Input,
   Label,
@@ -52,14 +53,14 @@ export function OrderView({ token }: { token: string }) {
       const res = await fetch(`/api/orders/${token}`, { cache: "no-store" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.message ?? "订单不存在或已失效");
+        setError(data.message ?? "无法找到订单，请返回首页输入原卡密查看。");
         return;
       }
       const data = await res.json();
       setOrder(data.order);
       setError(null);
     } catch {
-      setError("网络错误，请稍后再试");
+      setError("暂时无法读取最新状态，请检查网络后刷新。");
     } finally {
       setLoading(false);
     }
@@ -96,7 +97,7 @@ export function OrderView({ token }: { token: string }) {
       }
       setOrder(data.order);
     } catch {
-      setError("网络错误，请稍后再试");
+      setError("暂时无法读取最新状态，请检查网络后刷新。");
     } finally {
       setRetrying(false);
     }
@@ -121,7 +122,7 @@ export function OrderView({ token }: { token: string }) {
         <Card className="gap-4 rounded-2xl shadow-none">
           <div>
             <h1 className="text-lg font-semibold text-foreground">无法打开订单</h1>
-            <p className="mt-1 text-sm text-muted-foreground">请检查链接是否完整，或返回首页重新开始。</p>
+            <p className="mt-1 text-sm text-muted-foreground">请检查链接是否完整，或返回首页输入原卡密查看。</p>
           </div>
           <Alert kind="error">{error ?? "订单不存在"}</Alert>
           <Button className="w-full" onClick={() => router.push("/")}>
@@ -148,7 +149,7 @@ export function OrderView({ token }: { token: string }) {
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success/10">
                 <CircleCheck aria-hidden className="size-6 text-success-foreground" />
               </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">兑换并转移成功</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">号码已转入你的账户</h1>
               <dl className="space-y-2 rounded-xl bg-muted/50 p-4 text-left text-sm">
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">已兑换号码</dt>
@@ -157,7 +158,7 @@ export function OrderView({ token }: { token: string }) {
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">归属账户</dt>
+                  <dt className="text-muted-foreground">接收账户</dt>
                   <dd className="max-w-[65%] break-all text-right font-medium">
                     {order.recipientAccountId ?? order.recipientEmail}
                   </dd>
@@ -169,31 +170,31 @@ export function OrderView({ token }: { token: string }) {
                   <li>登录接收号码的 esim.gg 账户。</li>
                   <li>在账户的线路或号码列表中找到上方号码。</li>
                   <li>打开号码详情，查看 eSIM 安装信息或激活二维码。</li>
-                  <li>在支持 eSIM 的手机上按官方指引添加 eSIM；同一手机可使用官方提供的安装方式。</li>
+                  <li>按照官方指引，在支持 eSIM 的手机上添加此号码。</li>
                 </ol>
-                <a href="https://esim.gg" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">前往 esim.gg 安装 eSIM ↗</a>
+                <a href="https://esim.gg" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">登录 esim.gg 查看安装信息 ↗</a>
               </section>
             </div>
           )}
 
           {transferFailed && (
             <div className="space-y-4">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">号码已购得，转移未完成</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">号码已购买，转移未完成</h1>
               <Alert kind="warning">
                 <p>
                   号码：
                   <span className="font-code">{formatMsisdn(order.msisdn)}</span>
                 </p>
-                <p>{order.errorMessage ?? "号码转移失败，请核对接收账号后重试，或联系管理员。"}</p>
+                <p>{order.errorMessage ?? "请核对接收账户后重试，或联系客服。重试只会转移号码，不会再次购买。"}</p>
               </Alert>
               <form onSubmit={onRetry} className="space-y-3">
                 <div>
-                  <Label htmlFor="retry-userid">正确的 UserID 或已注册邮箱</Label>
+                  <Label htmlFor="retry-userid">接收账户</Label>
                   <Input
                     id="retry-userid"
                     autoComplete="off"
                     spellCheck={false}
-                    placeholder="cm 开头的 UserID 或已注册账户邮箱"
+                    placeholder="UserID（推荐）或 esim.gg 登录邮箱"
                     className="font-code"
                     value={recipient}
                     onChange={(e) => setRecipient(e.target.value.trim())}
@@ -207,7 +208,7 @@ export function OrderView({ token }: { token: string }) {
                   disabled={!recipient.trim()}
                   className="w-full"
                 >
-                  重新提交转移
+                  重试转移
                 </Button>
               </form>
             </div>
@@ -215,9 +216,9 @@ export function OrderView({ token }: { token: string }) {
 
           {uncertain && (
             <div className="space-y-4">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">正在核验官方购买结果</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">购买结果待确认</h1>
               <Alert kind="warning">
-                系统正在向 esim.gg 核实号码是否已购得。结果确认前不会再次购买，请稍后刷新状态或联系客服。
+                暂未收到明确的购买结果。请联系客服核实，勿再次兑换；确认前不会重复购买号码。
               </Alert>
               <p className="text-sm text-muted-foreground">
                 号码：<span className="font-code">{formatMsisdn(order.msisdn)}</span>
@@ -230,9 +231,9 @@ export function OrderView({ token }: { token: string }) {
 
           {(order.status === "PURCHASED" || order.status === "TRANSFERRING" || order.status === "PURCHASING" || order.status === "PENDING") && (
             <div className="space-y-4">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">订单已受理，正在自动开通</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">正在办理你的号码</h1>
               <Alert kind="info">
-                {order.status === "PENDING" || order.status === "PURCHASING" ? "正在采购号码，请保持网络连接，勿重复提交。此页面会自动更新结果。" : "号码已购买，正在转移至你的 esim.gg 账户。此页面会自动更新结果。"}
+                {order.status === "PENDING" || order.status === "PURCHASING" ? "正在开通号码，请勿重复提交。办理进度会自动更新。" : "号码已开通，正在转入你的 esim.gg 账户。办理进度会自动更新。"}
               </Alert>
               <p className="text-sm text-muted-foreground">
                 号码：<span className="font-code">{formatMsisdn(order.msisdn)}</span>
@@ -257,11 +258,11 @@ export function OrderView({ token }: { token: string }) {
 
           <dl className="mt-6 space-y-2 border-t border-border/70 pt-4 text-xs text-muted-foreground">
             <div className="flex justify-between">
-              <dt>号码价格</dt>
+              <dt>选号附加费</dt>
               <dd>{formatPrice(order.numberPrice)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt>内置初始余额</dt>
+              <dt>初始余额</dt>
               <dd>€{order.initialBalance}</dd>
             </div>
           </dl>
