@@ -1,6 +1,6 @@
 "use client";
 
-import { PublicButton as Button } from "@/components/arc/public-button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NumberSelectionGuide } from "@/components/NumberSelectionGuide";
 import { usePublicSiteSettings } from "@/components/PublicSiteNotice";
 
@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Search } from "lucide-react";
 import {
   Alert,
+  Button,
   Card,
   Input,
   Label,
@@ -227,20 +228,21 @@ export default function RedeemPage() {
           {!selected && settings && <p className="text-sm leading-6 text-muted-foreground">卡密可兑换 1 个{settings.allowPaidNumbers ? "可兑换" : "免费基础"}号码及 €{Number(settings.initialBalance).toFixed(2)} 初始余额。</p>}
         </div>
 
-        {!selected && <Card className="mb-4 gap-5 rounded-2xl shadow-none">
-          <div className="selection-switch flex gap-1 rounded-xl bg-muted p-1.5" aria-label="选号方式">
-            <Button type="button" variant={selectionMode === "direct" ? "secondary" : "ghost"} aria-pressed={selectionMode === "direct"} disabled={searching || submitting} onClick={() => setSelectionMode("direct")} className="h-11 flex-1 rounded-lg">精准输入</Button>
-            <Button type="button" variant={selectionMode === "search" ? "secondary" : "ghost"} aria-pressed={selectionMode === "search"} disabled={searching || submitting} onClick={() => setSelectionMode("search")} className="h-11 flex-1 rounded-lg">在线检索</Button>
-          </div>
-          {selectionMode === "direct" && <form onSubmit={onSelectTarget} className="space-y-3">
+        {!selected && <Card className="mb-4 gap-5 rounded-xl shadow-none">
+          <Tabs value={selectionMode} onValueChange={value => { if (value === "direct" || value === "search") setSelectionMode(value); }}>
+          <TabsList variant="line" aria-label="选号方式" className="mb-3 min-h-12 w-full justify-start border-b border-border p-0">
+            <TabsTrigger value="search" disabled={searching || submitting} className="min-h-11 flex-none px-4">在线检索</TabsTrigger>
+            <TabsTrigger value="direct" disabled={searching || submitting} className="min-h-11 flex-none px-4">精准输入</TabsTrigger>
+          </TabsList>
+          <TabsContent value="direct"><form onSubmit={onSelectTarget} className="space-y-3">
             <Label htmlFor="target-number">完整号码（含国家区号）</Label>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input id="target-number" inputMode="tel" autoComplete="off" value={targetNumber} onChange={e => setTargetNumber(e.target.value)} maxLength={40} placeholder="例如 +372 5123 4567" className="h-12 font-code" />
               <Button type="submit" loading={searching} disabled={!targetNumber.trim() || siteSettings?.redemptionPaused || submitting || checkingOrder || submissionBlocked} className="h-12 shrink-0">检查号码</Button>
             </div>
             <p className="text-xs text-muted-foreground">可直接粘贴带加号或空格的号码。检查通过不代表号码已预留。</p>
-          </form>}
-          {selectionMode === "search" && <form onSubmit={doSearch}>
+          </form></TabsContent>
+          <TabsContent value="search"><form onSubmit={doSearch}>
             <Label htmlFor="search">想找哪些数字？</Label>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input
@@ -262,7 +264,8 @@ export default function RedeemPage() {
             <p className="mt-2 text-xs text-muted-foreground">
               两次查找请间隔几秒。也可先到官网选号，再用「精准输入」检查。
             </p>
-          </form>}
+          </form></TabsContent>
+          </Tabs>
           <a href="https://esim.gg/new/number/vanity" target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground underline underline-offset-4">到官网选号 ↗</a>
         </Card>}
 
@@ -280,7 +283,7 @@ export default function RedeemPage() {
         )}
 
         {!selected && selectionMode === "search" && numbers.length > 0 && (
-          <Card className="gap-4 rounded-2xl shadow-none">
+          <Card className="gap-4 rounded-xl shadow-none">
             <ul className="divide-y divide-border/70">
               {numbers.map((n) => (
                 <li
@@ -314,7 +317,7 @@ export default function RedeemPage() {
         )}
 
         {selected && (
-          <Card className="gap-5 rounded-2xl shadow-none">
+          <Card className="gap-5 rounded-xl shadow-none">
 
             <dl className="space-y-3 rounded-xl bg-muted/50 p-4 text-sm">
               <div className="flex justify-between">

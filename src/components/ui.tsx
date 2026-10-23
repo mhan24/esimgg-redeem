@@ -55,7 +55,7 @@ export function Card({
     <ShadcnCard
       {...props}
       className={cn(
-        "w-full rounded-xl bg-card px-5 py-5 shadow-xs ring-1 ring-border/80 sm:px-6 sm:py-6",
+        "w-full rounded-xl border border-border bg-card px-5 py-5 shadow-none ring-0 sm:px-6 sm:py-6",
         className,
       )}
     />

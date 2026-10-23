@@ -1,6 +1,5 @@
 "use client";
 
-import { PublicButton as Button } from "@/components/arc/public-button";
 
 /**
  * 首页: 输入兑换码 (规格 §19/§20; 人机验证 §69)
@@ -8,7 +7,8 @@ import { PublicButton as Button } from "@/components/arc/public-button";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { Alert, Card, Input, Label } from "@/components/ui";
+import { Alert, Button, Input, Label } from "@/components/ui";
+import { Card } from "@/components/ui/card";
 import { Turnstile } from "@/components/Turnstile";
 import { useTurnstile } from "@/components/TurnstileProvider";
 import { PublicShell } from "@/components/PublicShell";
@@ -76,13 +76,13 @@ export default function HomePage() {
 
   return (
     <PublicShell>
-      <main className="redemption-entry grid w-full items-center">
-        <div className="entry-intro space-y-4">
-          <h1 className="entry-heading font-semibold tracking-tight">兑换你的<span className="block text-primary">esim.gg 号码</span></h1>
+      <main className="w-full max-w-4xl">
+        <div className="mb-8 space-y-3">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">兑换你的 esim.gg 号码</h1>
           <p className="max-w-md text-sm leading-7 text-muted-foreground">选好号码，转入你的 esim.gg 账户。</p>
-          {settings?.initialBalance && <p className="entry-balance text-sm text-muted-foreground">初始余额 <span className="ml-2 font-code font-medium text-primary">€{Number(settings.initialBalance).toFixed(2)}</span></p>}
         </div>
-        <Card className="entry-form w-full gap-7 p-6 sm:p-9">
+        <Card className="grid gap-0 overflow-hidden rounded-xl border border-border p-0 ring-0 md:grid-cols-[1.45fr_1fr]">
+          <section className="p-6 sm:p-8 lg:p-10" aria-label="验证卡密">
           <form onSubmit={onSubmit} className="space-y-5">
             <div>
               <Label htmlFor="code" className="mb-4 text-base font-semibold">卡密</Label>
@@ -92,7 +92,7 @@ export default function HomePage() {
                 autoComplete="off"
                 spellCheck={false}
                 placeholder="ESIM-XXXX-XXXX-XXXX"
-                className="h-14 font-code text-sm tracking-wide uppercase sm:text-base"
+                className="h-12 font-code text-sm tracking-wide uppercase"
                 value={code}
                 aria-invalid={!!error}
                 aria-describedby={error ? "code-error" : "code-help"}
@@ -110,13 +110,21 @@ export default function HomePage() {
               type="submit"
               loading={loading}
               disabled={turnstileEnabled && !turnstileToken}
-              className="entry-submit"
+              className="h-12 w-full justify-between px-4"
             >
               验证并继续
               <ArrowRight aria-hidden className="size-4" />
             </Button>
           </form>
-          <p id="code-help" className="border-t border-border pt-5 text-xs leading-6 text-muted-foreground">已兑换的卡密也可在此查看订单。</p>
+          <p id="code-help" className="mt-5 text-xs leading-6 text-muted-foreground">已兑换的卡密也可在此查看订单。</p>
+          </section>
+          <aside className="border-t border-border bg-muted/40 p-6 sm:p-8 md:border-t-0 md:border-l lg:p-10" aria-label="兑换内容">
+            <h2 className="mb-6 text-sm font-medium">兑换内容</h2>
+            <dl className="space-y-5 text-sm">
+              <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">esim.gg 号码</dt><dd className="font-medium">1 个</dd></div>
+              {settings?.initialBalance && <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">初始余额</dt><dd className="font-code font-medium">€{Number(settings.initialBalance).toFixed(2)}</dd></div>}
+            </dl>
+          </aside>
         </Card>
       </main>
     </PublicShell>

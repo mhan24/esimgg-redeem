@@ -1,6 +1,5 @@
 "use client";
 
-import { PublicButton as Button } from "@/components/arc/public-button";
 
 /**
  * 订单状态页 (规格 §21/§50/§51)
@@ -14,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { CircleCheck } from "lucide-react";
 import {
   Alert,
+  Button,
   Card,
   Input,
   Label,
@@ -107,7 +107,7 @@ export function OrderView({ token }: { token: string }) {
     return (
       <PublicShell>
         <main className="w-full max-w-lg">
-          <Card className="items-center gap-3 rounded-2xl py-12 text-center shadow-sm">
+          <Card className="items-center gap-3 rounded-xl py-12 text-center shadow-none">
             <Spinner label="正在加载订单状态…" />
           </Card>
         </main>
@@ -119,7 +119,7 @@ export function OrderView({ token }: { token: string }) {
     return (
       <PublicShell>
         <main className="w-full max-w-lg">
-        <Card className="gap-4 rounded-2xl shadow-none">
+        <Card className="gap-4 rounded-xl shadow-none">
           <div>
             <h1 className="text-lg font-semibold text-foreground">无法打开订单</h1>
             <p className="mt-1 text-sm text-muted-foreground">请检查链接是否完整，或返回首页输入原卡密查看。</p>
@@ -142,7 +142,7 @@ export function OrderView({ token }: { token: string }) {
   return (
     <PublicShell>
       <main className="w-full max-w-2xl">
-        <Card className="gap-5 rounded-2xl shadow-none ring-border/90">
+        <Card className="gap-5 rounded-xl shadow-none ring-border/90">
 
           {completed && (
             <div className="space-y-4 text-center">
