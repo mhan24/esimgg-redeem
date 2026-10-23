@@ -92,7 +92,7 @@ export function OrderView({ token }: { token: string }) {
       const data = await res.json();
       if (!res.ok) {
         await load();
-        setError(data.message ?? "重新转移失败，请稍后再试");
+        setError(data.message ?? "暂时无法转移，请稍后重试或联系客服。");
         return;
       }
       setOrder(data.order);
@@ -149,7 +149,7 @@ export function OrderView({ token }: { token: string }) {
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success/10">
                 <CircleCheck aria-hidden className="size-6 text-success-foreground" />
               </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">号码已转入你的账户</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">兑换完成</h1>
               <dl className="space-y-2 rounded-xl bg-muted/50 p-4 text-left text-sm">
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">已兑换号码</dt>
@@ -165,21 +165,21 @@ export function OrderView({ token }: { token: string }) {
                 </div>
               </dl>
               <section className="space-y-3 rounded-xl border border-border p-4 text-left text-sm leading-6" aria-labelledby="install-guide-title">
-                <h2 id="install-guide-title" className="font-semibold">如何安装到手机？</h2>
+                <h2 id="install-guide-title" className="font-semibold">安装 eSIM</h2>
                 <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
                   <li>登录接收号码的 esim.gg 账户。</li>
                   <li>在账户的线路或号码列表中找到上方号码。</li>
                   <li>打开号码详情，查看 eSIM 安装信息或激活二维码。</li>
                   <li>按照官方指引，在支持 eSIM 的手机上添加此号码。</li>
                 </ol>
-                <a href="https://esim.gg" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">登录 esim.gg 查看安装信息 ↗</a>
+                <a href="https://esim.gg" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">打开 esim.gg 安装 eSIM</a>
               </section>
             </div>
           )}
 
           {transferFailed && (
             <div className="space-y-4">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">号码已购买，转移未完成</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">号码已开通，尚未转入账户</h1>
               <Alert kind="warning">
                 <p>
                   号码：
@@ -246,7 +246,7 @@ export function OrderView({ token }: { token: string }) {
 
           {failed && (
             <div className="space-y-4">
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">本次兑换未成功</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">兑换未完成</h1>
               <Alert kind="error">
                 {order.errorMessage ?? "号码未能成功购买，卡密可继续使用，请重新选号。"}
               </Alert>

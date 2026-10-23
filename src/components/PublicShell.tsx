@@ -1,10 +1,13 @@
 "use client";
 import { PublicSiteNotice, PublicDisclaimer, usePublicSiteSettings } from "@/components/PublicSiteNotice";
-import type { ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
-import { Moon, Sun, Wifi } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+
+const subscribeToClient = () => () => {};
+const clientSnapshot = () => true;
+const serverSnapshot = () => false;
 
 export function PublicShell({
   children,
@@ -15,6 +18,8 @@ export function PublicShell({
 }) {
   const settings = usePublicSiteSettings();
   const { resolvedTheme, setTheme } = useTheme();
+  const mounted = useSyncExternalStore(subscribeToClient, clientSnapshot, serverSnapshot);
+  const dark = mounted && resolvedTheme === "dark";
   const siteName = settings?.siteName ?? "号码兑换";
   return (
     <div className="public-shell flex min-h-dvh flex-1 flex-col bg-background">
@@ -24,21 +29,18 @@ export function PublicShell({
           href="/"
           className="inline-flex min-w-0 items-center gap-2.5 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Wifi aria-hidden className="size-5" />
-          </span>
           <span className="min-w-0">
-            <span className="block max-w-44 truncate text-sm font-semibold tracking-tight text-foreground">
+            <span className="block max-w-44 truncate text-sm font-semibold tracking-tight text-foreground sm:max-w-64">
               {siteName}
             </span>
             {mode === "admin" && <span className="hidden text-xs text-muted-foreground sm:block">管理后台</span>}
           </span>
         </Link>
         {mode === "public" && <nav aria-label="站点链接" className="flex shrink-0 items-center gap-3 text-xs sm:gap-6 sm:text-sm">
-          {settings?.purchaseUrl && <a href={settings.purchaseUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">购买新卡密</a>}
-          {settings?.supportUrl && <a href={settings.supportUrl} target="_blank" rel="noopener noreferrer" aria-label={settings.supportUrl.startsWith("https://t.me/") ? "Telegram 在线客服" : "在线客服"} className="inline-flex min-h-10 items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">{settings.supportUrl.startsWith("https://t.me/") ? <><span className="sm:hidden">TG 客服</span><span className="hidden sm:inline">Telegram 客服</span></> : "在线客服"}</a>}
-          <Button type="button" variant="ghost" size="icon" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")} aria-label={resolvedTheme === "dark" ? "切换浅色外观" : "切换深色外观"} className="size-10 text-muted-foreground">
-            {resolvedTheme === "dark" ? <Sun aria-hidden className="size-4" /> : <Moon aria-hidden className="size-4" />}
+          {settings?.purchaseUrl && <a href={settings.purchaseUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">购买卡密</a>}
+          {settings?.supportUrl && <a href={settings.supportUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">联系客服</a>}
+          <Button type="button" variant="ghost" onClick={() => setTheme(dark ? "light" : "dark")} aria-label={dark ? "切换浅色外观" : "切换深色外观"} className="h-10 text-xs text-muted-foreground">
+            {dark ? "浅色" : "深色"}
           </Button>
         </nav>}
       </div></header>

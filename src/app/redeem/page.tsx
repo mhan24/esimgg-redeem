@@ -9,7 +9,6 @@ import { usePublicSiteSettings } from "@/components/PublicSiteNotice";
  */
 import { useCallback, useEffect, useState, useRef, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Search } from "lucide-react";
 import {
   Alert,
   Button,
@@ -101,7 +100,7 @@ export default function RedeemPage() {
       if (data.settings) setSettings(data.settings);
       if (data.numbers) {
         setNumbers(data.numbers);
-        if (data.numbers.length === 0) setNotice("暂时没有可兑换的号码。请稍后再查找，或到官网查看号源。");
+        if (data.numbers.length === 0) setNotice("暂时没有可用号码。请稍后重试，或到官网查看库存。");
       }
       if (data.error) setError(data.error);
       setSubmissionBlocked(data.blocked ?? false);
@@ -140,7 +139,7 @@ export default function RedeemPage() {
       }
       setNumbers(data.numbers ?? []);
       if ((data.numbers ?? []).length === 0) {
-        setNotice("未找到符合条件的可兑换号码。可更换数字，或前往官网挑号后使用「精准输入」。免费号源也可能暂时缺货。");
+        setNotice("没有找到匹配的号码。请换一组数字，或到官网选好后输入完整号码。");
       }
     } catch {
       setError("网络连接异常，请检查网络后重试");
@@ -161,8 +160,8 @@ export default function RedeemPage() {
       if (res.status === 401) { router.replace("/"); return; }
       if (!res.ok) { setError(data.message ?? "暂时无法核验目标号码，请稍后再试。"); return; }
       const number = (data.numbers ?? []).find((n: NumberItem) => n.msisdn.replace(/\D/g, "") === target);
-      if (!number) { setError("未在可兑换号库中查到此号码，可能已售出或不在当前兑换范围内。请前往官网确认；付费号码请联系客服办理。"); return; }
-      if (Number(number.price) > 0) { setError("该号码为付费号码，当前精准输入通道仅支持免费基础号码。请复制号码联系客服补差并办理转移。"); return; }
+      if (!number) { setError("暂时无法兑换此号码，可能已售出或不在兑换范围内。请到官网确认；付费号码请联系客服办理。"); return; }
+      if (Number(number.price) > 0) { setError("这是付费号码，需联系客服补差办理。请将完整号码发给客服。"); return; }
       setNumbers([]); setSelected(number);
       setNotice(null);
     } catch { setError("网络连接失败，暂时无法核验号码，请稍后再试。"); }
@@ -224,15 +223,15 @@ export default function RedeemPage() {
     <PublicShell>
       <main className="w-full max-w-2xl">
         <div className="mb-8 space-y-3">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{selected ? "确认兑换" : "选择号码"}</h1>
-          {!selected && settings && <p className="text-sm leading-6 text-muted-foreground">卡密可兑换 1 个{settings.allowPaidNumbers ? "可兑换" : "免费基础"}号码及 €{Number(settings.initialBalance).toFixed(2)} 初始余额。</p>}
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{selected ? "确认兑换" : "选择号码"}</h1>
+          {!selected && settings && <p className="text-sm leading-6 text-muted-foreground">可兑换 1 个{settings.allowPaidNumbers ? "" : "免费基础"}号码，含 €{Number(settings.initialBalance).toFixed(2)} 初始余额。</p>}
         </div>
 
         {!selected && <Card className="mb-4 gap-5 rounded-xl shadow-none">
           <Tabs value={selectionMode} onValueChange={value => { if (value === "direct" || value === "search") setSelectionMode(value); }}>
           <TabsList variant="line" aria-label="选号方式" className="mb-3 min-h-12 w-full justify-start border-b border-border p-0">
-            <TabsTrigger value="search" disabled={searching || submitting} className="min-h-11 flex-none px-4">在线检索</TabsTrigger>
-            <TabsTrigger value="direct" disabled={searching || submitting} className="min-h-11 flex-none px-4">精准输入</TabsTrigger>
+            <TabsTrigger value="search" disabled={searching || submitting} className="min-h-11 flex-none px-4">查找号码</TabsTrigger>
+            <TabsTrigger value="direct" disabled={searching || submitting} className="min-h-11 flex-none px-4">输入完整号码</TabsTrigger>
           </TabsList>
           <TabsContent value="direct"><form onSubmit={onSelectTarget} className="space-y-3">
             <Label htmlFor="target-number">完整号码（含国家区号）</Label>
@@ -243,7 +242,7 @@ export default function RedeemPage() {
             <p className="text-xs text-muted-foreground">可直接粘贴带加号或空格的号码。检查通过不代表号码已预留。</p>
           </form></TabsContent>
           <TabsContent value="search"><form onSubmit={doSearch}>
-            <Label htmlFor="search">想找哪些数字？</Label>
+            <Label htmlFor="search">号码片段（可选）</Label>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input
                 id="search"
@@ -257,12 +256,12 @@ export default function RedeemPage() {
                 }
               />
               <Button type="submit" loading={searching} disabled={siteSettings?.redemptionPaused || submitting || checkingOrder || submissionBlocked} className="h-12 shrink-0">
-                <Search aria-hidden className="size-4" />
+
                 {searching ? "获取中…" : "查找号码"}
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              两次查找请间隔几秒。也可先到官网选号，再用「精准输入」检查。
+              两次查找请间隔几秒。也可先到官网选号，再用「输入完整号码」检查。
             </p>
           </form></TabsContent>
           </Tabs>
@@ -308,7 +307,7 @@ export default function RedeemPage() {
                     }}
                   >
                     选择
-                    <ArrowRight aria-hidden className="size-4" />
+
                   </Button>
                 </li>
               ))}

@@ -6,9 +6,7 @@
  */
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
 import { Alert, Button, Input, Label } from "@/components/ui";
-import { Card } from "@/components/ui/card";
 import { Turnstile } from "@/components/Turnstile";
 import { useTurnstile } from "@/components/TurnstileProvider";
 import { PublicShell } from "@/components/PublicShell";
@@ -76,22 +74,21 @@ export default function HomePage() {
 
   return (
     <PublicShell>
-      <main className="w-full max-w-4xl">
+      <main className="w-full max-w-lg sm:mt-6">
         <div className="mb-8 space-y-3">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">兑换你的 esim.gg 号码</h1>
-          <p className="max-w-md text-sm leading-7 text-muted-foreground">选好号码，转入你的 esim.gg 账户。</p>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">兑换号码</h1>
+          <p className="text-sm leading-7 text-muted-foreground">使用卡密选号，完成后转入你的 esim.gg 账户。</p>
         </div>
-        <Card className="grid gap-0 overflow-hidden rounded-xl border border-border p-0 ring-0 md:grid-cols-[1.45fr_1fr]">
-          <section className="p-6 sm:p-8 lg:p-10" aria-label="验证卡密">
+          <section aria-label="验证卡密">
           <form onSubmit={onSubmit} className="space-y-5">
             <div>
-              <Label htmlFor="code" className="mb-4 text-base font-semibold">卡密</Label>
+              <Label htmlFor="code" className="mb-3 text-sm font-medium">兑换卡密</Label>
               <Input
                 id="code"
                 name="code"
                 autoComplete="off"
                 spellCheck={false}
-                placeholder="ESIM-XXXX-XXXX-XXXX"
+                placeholder="粘贴购买时获得的完整卡密"
                 className="h-12 font-code text-sm tracking-wide uppercase"
                 value={code}
                 aria-invalid={!!error}
@@ -110,22 +107,14 @@ export default function HomePage() {
               type="submit"
               loading={loading}
               disabled={turnstileEnabled && !turnstileToken}
-              className="h-12 w-full justify-between px-4"
+              className="h-12 w-full px-4"
             >
-              验证并继续
-              <ArrowRight aria-hidden className="size-4" />
+              {loading ? "正在验证…" : "验证卡密"}
             </Button>
           </form>
-          <p id="code-help" className="mt-5 text-xs leading-6 text-muted-foreground">已兑换的卡密也可在此查看订单。</p>
+          <p id="code-help" className="mt-4 text-xs leading-6 text-muted-foreground">已兑换？输入原卡密查看订单。</p>
           </section>
-          <aside className="border-t border-border bg-muted/40 p-6 sm:p-8 md:border-t-0 md:border-l lg:p-10" aria-label="兑换内容">
-            <h2 className="mb-6 text-sm font-medium">兑换内容</h2>
-            <dl className="space-y-5 text-sm">
-              <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">esim.gg 号码</dt><dd className="font-medium">1 个</dd></div>
-              {settings?.initialBalance && <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">初始余额</dt><dd className="font-code font-medium">€{Number(settings.initialBalance).toFixed(2)}</dd></div>}
-            </dl>
-          </aside>
-        </Card>
+          <p className="mt-8 border-t border-border pt-5 text-xs leading-6 text-muted-foreground">每张卡密可兑换 1 个号码{settings?.initialBalance ? `，含 €${Number(settings.initialBalance).toFixed(2)} 初始余额` : ""}。</p>
       </main>
     </PublicShell>
   );

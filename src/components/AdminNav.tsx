@@ -13,7 +13,6 @@ import {
   ShoppingCart,
   Ticket,
   UserRound,
-  Wifi,
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,12 +29,12 @@ import { Separator } from "@/components/ui/separator";
 
 
 const NAV = [
-  { href: "/admin", label: "仪表盘", icon: LayoutDashboard },
+  { href: "/admin", label: "概览", icon: LayoutDashboard },
   { href: "/admin/codes", label: "卡密管理", icon: Ticket },
   { href: "/admin/orders", label: "订单管理", icon: ShoppingCart },
   { href: "/admin/exceptions", label: "异常订单", icon: CircleAlert },
-  { href: "/admin/settings", label: "系统设置", icon: Settings2 },
-  { href: "/admin/audit", label: "审计日志", icon: ScrollText },
+  { href: "/admin/settings", label: "设置", icon: Settings2 },
+  { href: "/admin/audit", label: "操作记录", icon: ScrollText },
 ];
 
 function isCurrent(pathname: string, href: string) {
@@ -63,12 +62,9 @@ export function AdminNav({ username }: { username: string }) {
     <Sidebar collapsible="icon" className="border-sidebar-border">
       <SidebarHeader className="p-4">
         <Link href="/admin" className="flex min-w-0 items-center gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <Wifi aria-hidden className="size-5" />
-          </span>
+          <span className="hidden text-xs group-data-[collapsible=icon]:block">管理</span>
           <span className="min-w-0 group-data-[collapsible=icon]:hidden">
             <span className="block truncate text-sm font-semibold tracking-tight text-sidebar-foreground">{settings?.siteName ?? "号码兑换"}</span>
-            <span className="mt-0.5 block truncate text-xs text-sidebar-foreground/65">管理控制台</span>
           </span>
         </Link>
       </SidebarHeader>
@@ -88,7 +84,7 @@ export function AdminNav({ username }: { username: string }) {
                     aria-current={active ? "page" : undefined}
                     className={active ? "data-active:bg-sidebar-accent data-active:text-sidebar-primary" : "text-sidebar-foreground/75"}
                   >
-                    <Icon aria-hidden />
+                    <Icon aria-hidden strokeWidth={1.5} />
                     <span>{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -137,7 +133,7 @@ export function AdminTopbar() {
     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-4 md:px-7">
       <SidebarTrigger className="size-9" aria-label="切换导航菜单" />
       <Separator orientation="vertical" className="h-5" />
-      <Link href="/" target="_blank" rel="noopener noreferrer" className="ml-auto inline-flex min-h-10 items-center text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">打开前台 ↗</Link>
+      <Link href="/" target="_blank" rel="noopener noreferrer" className="ml-auto inline-flex min-h-10 items-center text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">查看兑换页</Link>
     </header>
   );
 }
