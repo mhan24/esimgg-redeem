@@ -39,7 +39,7 @@ export function PublicShell({
         {mode === "public" && <nav aria-label="站点链接" className="flex shrink-0 items-center gap-3 text-xs sm:gap-6 sm:text-sm">
           {settings?.purchaseUrl && <a href={settings.purchaseUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">购买卡密</a>}
           {settings?.supportUrl && <a href={settings.supportUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4">联系客服</a>}
-          <Button type="button" variant="ghost" onClick={() => setTheme(dark ? "light" : "dark")} aria-label={dark ? "切换浅色外观" : "切换深色外观"} className="h-10 text-xs text-muted-foreground">
+          <Button type="button" variant="outline" onClick={() => setTheme(dark ? "light" : "dark")} aria-label={dark ? "切换浅色外观" : "切换深色外观"} className="h-10 min-w-16 border-input bg-card px-3 text-xs text-foreground shadow-xs hover:border-foreground/40 hover:bg-muted active:bg-muted active:translate-y-px">
             {dark ? "浅色" : "深色"}
           </Button>
         </nav>}

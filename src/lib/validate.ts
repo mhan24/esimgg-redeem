@@ -1,3 +1,5 @@
+import { badRequest } from "./http";
+
 /**
  * 输入校验助手
  */
@@ -39,5 +41,28 @@ export function isValidUsername(value: string): boolean {
  * 下限与 seed 的 ADMIN_INITIAL_PASSWORD 规则一致; 上限因 bcrypt 只取前 72 字节
  */
 export function isValidPassword(value: string): boolean {
-  return value.length >= 8 && value.length <= 72;
+  return value.length >= 8 && new TextEncoder().encode(value).length <= 72;
+}
+
+/** 兑换和重试共用的接收方输入契约；不接受旧 accountId 别名。 */
+export function parseRecipient(body: unknown): { userid: string; email: string } {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    throw badRequest("BAD_REQUEST", "请求格式错误");
+  }
+  const input = body as Record<string, unknown>;
+  if ("accountId" in input) {
+    throw badRequest("RECIPIENT_FIELD_REMOVED", "请使用 userid 或 email 字段");
+  }
+  for (const field of ["userid", "email"] as const) {
+    if (input[field] !== undefined && typeof input[field] !== "string") {
+      throw badRequest("RECIPIENT_INVALID", "接收方格式不正确");
+    }
+  }
+  const userid = normalizeUserid(input.userid);
+  const email = typeof input.email === "string" ? input.email.trim() : "";
+  if (userid && email) throw badRequest("RECIPIENT_CONFLICT", "UserID 与邮箱只能填写其中一项");
+  if (!userid && !email) throw badRequest("RECIPIENT_REQUIRED", "请填写接收 UserID 或邮箱");
+  if (userid && !isValidUserid(userid)) throw badRequest("USERID_INVALID", "UserID 格式不正确");
+  if (email && !isValidEmail(email)) throw badRequest("EMAIL_INVALID", "邮箱格式不正确");
+  return { userid, email };
 }

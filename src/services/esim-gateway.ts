@@ -22,7 +22,6 @@ import {
   noKeyError,
   orderKeysByStrategy,
   resolveKey,
-  resolveLegacyKey,
   type KeyStrategy,
   type ResolvedKey,
 } from "./api-key-service";
@@ -36,7 +35,6 @@ export type AttemptOutcome =
 export interface KeyAttempt {
   keyId: string;
   keyName: string;
-  legacy: boolean;
   outcome: AttemptOutcome;
   detail?: string;
 }
@@ -53,7 +51,7 @@ export interface CallWithKeysOptions<T> {
   minBalanceCents?: number;
   /** 明确失败时是否值得切换 Key (如余额不足) */
   switchOnDefinitive?: (err: EsimApiError) => boolean;
-  /** 锁定 Key (转移/对账); null 表示按策略选择 */
+  /** 锁定 Key (转移/对账); null 拒绝执行，仅省略时按策略选择 */
   fixedKeyId?: string | null;
 }
 
@@ -86,12 +84,15 @@ export function isKeyLevelError(err: EsimApiError): boolean {
   );
 }
 
-/** 解析候选 Key 列表 (锁定 / 策略选择 / 旧版兜底) */
+/** 解析候选 Key 列表 (锁定 / 策略选择) */
 async function resolveCandidates(
   strategy: KeyStrategy,
   fixedKeyId?: string | null,
 ): Promise<ResolvedKey[]> {
-  if (fixedKeyId) {
+  if (fixedKeyId !== undefined) {
+    if (!fixedKeyId) {
+      throw new ApiError(409, "API_KEY_MISSING", "订单未记录购买账户，请联系管理员核实后处理");
+    }
     try {
       return [await resolveKey(fixedKeyId)];
     } catch {
@@ -109,13 +110,10 @@ async function resolveCandidates(
       id: k.id,
       name: k.name,
       apiKey: decryptSecret(k.encryptedKey),
-      legacy: false,
     }));
   }
 
-  // 兜底: 旧版单 Key (用户要求保留)
-  const legacy = await resolveLegacyKey();
-  return legacy ? [legacy] : [];
+  return [];
 }
 
 /** 余额预检: ok=true 表示余额充足或无法判定 (继续执行) */
@@ -173,7 +171,6 @@ export async function callWithKeys<T>(
         attempts.push({
           keyId: key.id,
           keyName: key.name,
-          legacy: key.legacy,
           outcome: "insufficient_balance",
           detail:
             check.error?.message ??
@@ -189,7 +186,6 @@ export async function callWithKeys<T>(
       attempts.push({
         keyId: key.id,
         keyName: key.name,
-        legacy: key.legacy,
         outcome: "success",
       });
       await markKeyUsed(key.id);
@@ -199,7 +195,6 @@ export async function callWithKeys<T>(
       attempts.push({
         keyId: key.id,
         keyName: key.name,
-        legacy: key.legacy,
         outcome: "task_failed",
         detail: err instanceof Error ? err.message : String(err),
       });

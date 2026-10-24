@@ -16,7 +16,8 @@ import {
 } from "@/lib/http";
 import { rateLimit } from "@/lib/ratelimit";
 import { serializeOrder } from "@/lib/serialize";
-import { isValidUserid, normalizeUserid } from "@/lib/validate";
+import { parseRecipient } from "@/lib/validate";
+import { assertTrustedOrigin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,7 @@ export async function POST(
   { params }: { params: Promise<{ token: string }> },
 ) {
   try {
+    assertTrustedOrigin(req);
     const { token } = await params;
     const session = await getRedeemSession();
     const order = await prisma.order.findUnique({
@@ -41,38 +43,14 @@ export async function POST(
     const limit = rateLimit(`retry-transfer:${ip}`, 5, 60_000);
     if (!limit.ok) throw tooManyRequests(limit.retryAfterSec);
 
-    let body: { userid?: unknown; accountId?: unknown; email?: unknown };
+    let body: unknown;
     try {
       body = await req.json();
     } catch {
       throw new ApiError(400, "BAD_REQUEST", "请求格式错误");
     }
 
-    // 接收方: UserID 优先 (accountId 兼容), 也支持邮箱，二选一
-    const userid =
-      normalizeUserid(body.userid) || normalizeUserid(body.accountId);
-    if (userid) {
-      if (userid.includes("@")) {
-        throw new ApiError(
-          400,
-          "USERID_INVALID",
-          "请输入 UserID（cm 开头），不要填写邮箱",
-        );
-      }
-      if (!isValidUserid(userid)) {
-        throw new ApiError(400, "USERID_INVALID", "UserID 格式不正确");
-      }
-    }
-    const email = typeof body.email === "string" ? body.email.trim() : "";
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      throw new ApiError(400, "EMAIL_INVALID", "邮箱格式不正确");
-    }
-    if (userid && email) {
-      throw new ApiError(400, "RECIPIENT_CONFLICT", "UserID 与邮箱只能填写其中一项");
-    }
-    if (!userid && !email) {
-      throw new ApiError(400, "RECIPIENT_REQUIRED", "请填写接收 UserID 或邮箱");
-    }
+    const { userid, email } = parseRecipient(body);
 
     const updated = await transferOrder(order.id, {
       recipientAccountId: userid || undefined,

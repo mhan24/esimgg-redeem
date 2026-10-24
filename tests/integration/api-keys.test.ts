@@ -9,12 +9,11 @@
  *  5. 转移锁定 — 购买与转移使用同一个 Key
  *  6. 结果未知绝不换 Key — 超时后只尝试一次, 走对账
  *  7. 禁用 Key — 不参与调用
- *  8. Key 管理 — 增删启用禁用/排序/兜底旧 Key
+ *  8. Key 管理 — 增删启用禁用/排序
  */
 import { describe, expect, it, beforeEach } from "vitest";
 import { createCode, prisma, resetDb, seedSettings } from "../setup";
 import { createFakeEsim } from "../helpers/fake-esim";
-import { encryptSecret } from "@/lib/crypto";
 import { executePurchase } from "@/services/purchase-service";
 import { searchNumbersForCode } from "@/services/search-service";
 import {
@@ -22,7 +21,6 @@ import {
   deleteApiKey,
   listApiKeys,
   moveApiKey,
-  resolveLegacyKey,
   setApiKeyEnabled,
   updateKeySettings,
 } from "@/services/api-key-service";
@@ -248,27 +246,6 @@ describe("多 API Key (规格 §71)", () => {
     expect(fake.purchaseKeys()).toEqual([KEY_B]); // 上移后 B 优先
   });
 
-  it("10. 删除全部 Key 后兜底旧版单 Key (用户要求保留)", async () => {
-    const fake = createFakeEsim({ wallet: 100, apiKey: "legacy_key_999" });
-    fake.install();
-    // 旧版单 Key (SystemSetting.encryptedEsimApiKey)
-    await seedSettings({ encryptedEsimApiKey: encryptSecret("legacy_key_999") });
-
-    const a = await createApiKey({ name: "A", apiKey: KEY_A });
-    await deleteApiKey(a.id);
-    expect(await listApiKeys()).toHaveLength(0);
-
-    const legacy = await resolveLegacyKey();
-    expect(legacy?.apiKey).toBe("legacy_key_999");
-
-    const { order } = await arrangeOrder("0.00", "0.50");
-    const result = await purchase(order);
-    expect(result.status).toBe("COMPLETED");
-    expect(fake.purchaseKeys()).toEqual(["legacy_key_999"]);
-    // 兜底 Key 不写入 apiKeyId (它不是表内 Key)
-    const fresh = await prisma.order.findUnique({ where: { id: order.id } });
-    expect(fresh!.apiKeyId).toBeNull();
-  });
 
   it("11. 还有未完成转移的订单时禁止删除 Key", async () => {
     await createApiKey({ name: "A", apiKey: KEY_A });
@@ -304,18 +281,6 @@ describe("多 API Key (规格 §71)", () => {
     expect(await listApiKeys()).toHaveLength(0);
   });
 
-  it("11b. 兜底 Key 不写入订单 apiKeyId (它不是表内 Key)", async () => {
-    const fake = createFakeEsim({ wallet: 100, apiKey: "legacy_only_key" });
-    fake.install();
-    await seedSettings({ encryptedEsimApiKey: encryptSecret("legacy_only_key") });
-
-    const { order } = await arrangeOrder("0.00", "0.50");
-    const result = await purchase(order);
-    expect(result.status).toBe("COMPLETED");
-    expect(fake.purchaseKeys()).toEqual(["legacy_only_key"]);
-    const fresh = await prisma.order.findUnique({ where: { id: order.id } });
-    expect(fresh!.apiKeyId).toBeNull();
-  });
 
   it("12. 搜索使用网关: Key 级错误自动切换", async () => {
     const fake = createFakeEsim({ wallet: 100 });

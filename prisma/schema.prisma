@@ -55,9 +55,6 @@ model SystemSetting {
   encryptedTelegramToken String?
   telegramChatId         String?
   siteName               String   @default("esim.gg 号码兑换")
-  /// AES-256-GCM 加密后的 esim.gg API Key (规格 §6), 绝不明文返回
-  /// 多 key 场景下仅作兜底 (规格 §71): 新表无启用 key 时回退使用
-  encryptedEsimApiKey    String?
   /// 初始余额 EUR (规格 §7 默认 0.05, 按运营要求调整为 0.50)
   initialBalance         Decimal  @default(0.5) @db.Decimal(10, 2)
   allowFreeNumbers       Boolean  @default(true)

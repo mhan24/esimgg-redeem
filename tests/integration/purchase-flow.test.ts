@@ -36,10 +36,8 @@ const PAID_LINE = { msisdn: "37233333333", price: 3 };
 /** 安装 fake esim 并把 Key 写入设置 */
 async function arrange(fake: FakeEsim, settings: Record<string, unknown> = {}) {
   fake.install();
-  await seedSettings({
-    encryptedEsimApiKey: encryptSecret(fake.apiKey),
-    ...settings,
-  });
+  await seedSettings(settings);
+  await prisma.esimApiKey.create({ data: { name: "fixture", encryptedKey: encryptSecret(fake.apiKey) } });
 }
 
 /** 为卡密执行一次搜索, 建立 SearchSession */

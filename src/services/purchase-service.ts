@@ -159,7 +159,7 @@ async function markPurchased(
         purchaseResponse: (purchaseResponse ?? undefined) as
           | Prisma.InputJsonValue
           | undefined,
-        ...(usedKey && !usedKey.legacy ? { apiKeyId: usedKey.id } : {}),
+        ...(usedKey ? { apiKeyId: usedKey.id } : {}),
         ...(breakdown
           ? {
               costTotal: breakdown.total,
@@ -212,7 +212,10 @@ export async function executePurchase(order: Order): Promise<Order> {
     const result = await callWithKeys({
       minBalanceCents: needCents,
       switchOnDefinitive: isInsufficientBalanceError,
-      task: (client, key) => {
+      task: async (client, key) => {
+        // 在发起外部购买前持久化账户，进程中断后仍可使用原账户对账。
+        await prisma.order.update({ where: { id: order.id }, data: { apiKeyId: key.id } });
+        order.apiKeyId = key.id;
         usedKey = key;
         return client.purchaseNumber({
           msisdn: order.msisdn,
@@ -290,7 +293,7 @@ export async function executePurchase(order: Order): Promise<Order> {
   await markPurchased(order, purchaseRaw, usedKey);
 
   // Wallet balance changes on purchase; refresh the actual key, with failures isolated.
-  if (usedKey && !usedKey.legacy) {
+  if (usedKey) {
     try { await refreshKeyBalance(usedKey.id); } catch { /* Periodic monitor retries. */ }
   }
 

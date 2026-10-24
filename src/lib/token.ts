@@ -51,14 +51,15 @@ export function verifyToken(token: string): Record<string, unknown> | null {
   const a = Buffer.from(sig);
   const b = Buffer.from(expected);
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
-  let body: Record<string, unknown>;
+  let decoded: unknown;
   try {
-    body = JSON.parse(b64urlDecode(data).toString("utf8"));
+    decoded = JSON.parse(b64urlDecode(data).toString("utf8"));
   } catch {
     return null;
   }
-  const exp = typeof body.exp === "number" ? body.exp : 0;
-  if (exp * 1000 < Date.now()) return null;
+  if (!decoded || typeof decoded !== "object" || Array.isArray(decoded)) return null;
+  const body = decoded as Record<string, unknown>;
+  if (typeof body.exp !== "number" || !Number.isSafeInteger(body.exp) || body.exp * 1000 <= Date.now()) return null;
   return body;
 }
 

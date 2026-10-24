@@ -14,6 +14,7 @@ import {
   tooManyRequests,
 } from "@/lib/http";
 import { rateLimit } from "@/lib/ratelimit";
+import { assertTrustedOrigin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,7 @@ const WINDOW_MS = 10 * 60 * 1000;
 
 export async function POST(req: Request) {
   try {
+    assertTrustedOrigin(req);
     const ip = clientIp(req);
     const limit = rateLimit(`verify:${ip}`, MAX_FAILURES, WINDOW_MS);
     if (!limit.ok) {
@@ -46,7 +48,6 @@ export async function POST(req: Request) {
     // 绑定兑换会话 (后续搜索/下单据此识别卡密)
     await createRedeemSession({
       codeId: result.codeId,
-      code: result.code,
     });
     logger.info("卡密验证成功", { code: result.code.slice(0, 9) + "****", kind: result.kind });
     return jsonOk(result);

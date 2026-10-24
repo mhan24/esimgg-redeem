@@ -4,13 +4,12 @@
  * - Key 明文只在内存, 落库 AES-256-GCM 加密 (规格 §46)
  * - 策略 sequential (从第一个到最后一个) / random (随机)
  * - 余额不足或明确失败时由 esim-gateway 负责切换
- * - 旧版单 Key (SystemSetting.encryptedEsimApiKey) 保留作兜底
  */
-import type { EsimApiKey, Prisma, SystemSetting } from "@prisma/client";
+import type { EsimApiKey, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { decryptSecret, encryptSecret, maskSecret } from "@/lib/crypto";
 import { EsimClient } from "@/lib/esim/client";
-import { ApiError, badRequest, notFound, serverError } from "@/lib/http";
+import { ApiError, badRequest, notFound } from "@/lib/http";
 import { getSettings } from "./settings-service";
 import { logger } from "@/lib/logger";
 
@@ -37,8 +36,6 @@ export interface ResolvedKey {
   id: string;
   name: string;
   apiKey: string;
-  /** true 表示来自旧版单 Key 兜底 */
-  legacy: boolean;
 }
 
 export function toApiKeyView(key: EsimApiKey): ApiKeyView {
@@ -80,7 +77,7 @@ export async function getApiKey(id: string): Promise<EsimApiKey> {
 /** 解密单个 Key (内部使用) */
 export async function resolveKey(id: string): Promise<ResolvedKey> {
   const key = await getApiKey(id);
-  return { id: key.id, name: key.name, apiKey: decryptSecret(key.encryptedKey), legacy: false };
+  return { id: key.id, name: key.name, apiKey: decryptSecret(key.encryptedKey) };
 }
 
 export async function createApiKey(input: {
@@ -146,7 +143,7 @@ export async function deleteApiKey(id: string): Promise<{ detachedOrders: number
   const pendingOrders = await prisma.order.count({
     where: {
       apiKeyId: id,
-      status: { in: ["PURCHASED", "TRANSFER_FAILED", "TRANSFERRING", "PURCHASE_UNCERTAIN"] },
+      status: { in: ["PENDING", "PURCHASING", "PURCHASED", "TRANSFER_FAILED", "TRANSFERRING", "PURCHASE_UNCERTAIN"] },
     },
   });
   if (pendingOrders > 0) {
@@ -182,34 +179,13 @@ export function orderKeysByStrategy<T extends { id: string }>(
   return keys; // listApiKeys 已按 sortOrder 排序
 }
 
-/**
- * 旧版单 Key 兜底 (用户要求保留):
- * 新表没有任何启用 Key 时回退到 SystemSetting.encryptedEsimApiKey
- */
-export async function resolveLegacyKey(): Promise<ResolvedKey | null> {
-  const settings: SystemSetting = await getSettings();
-  if (!settings.encryptedEsimApiKey) return null;
-  try {
-    return {
-      id: "legacy",
-      name: "旧版 Key",
-      apiKey: decryptSecret(settings.encryptedEsimApiKey),
-      legacy: true,
-    };
-  } catch {
-    logger.error("旧版 API Key 解密失败");
-    return null;
-  }
-}
-
 /** 无任何可用 Key */
 export function noKeyError(): ApiError {
-  return serverError("尚未配置 esim.gg API Key，请联系管理员");
+  return new ApiError(503, "API_KEY_MISSING", "尚未配置启用的 esim.gg API Key，请联系管理员");
 }
 
 /** 记录 Key 使用情况 (失败不影响主流程) */
 export async function markKeyUsed(id: string): Promise<void> {
-  if (id === "legacy") return;
   try {
     await prisma.esimApiKey.update({
       where: { id },
@@ -242,16 +218,6 @@ export async function refreshKeyBalance(id: string): Promise<{ balance: number; 
     });
     throw err;
   }
-}
-
-/** 低余额 Key (用于预警) */
-export async function findLowBalanceKeys(
-  threshold: number,
-): Promise<ApiKeyView[]> {
-  const keys = await listApiKeys();
-  return keys
-    .filter((k) => k.enabled && k.lastBalance !== null && Number(k.lastBalance) < threshold)
-    .map(toApiKeyView);
 }
 
 /** 策略与阈值的持久化 (后台设置) */

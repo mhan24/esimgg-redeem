@@ -6,6 +6,7 @@ import { transferOrder } from "@/services/transfer-service";
 import { requireAdmin, assertTrustedOrigin } from "@/lib/auth";
 import { writeAudit } from "@/services/audit-service";
 import { ApiError, clientIp, jsonError, jsonOk } from "@/lib/http";
+import { parseRecipient } from "@/lib/validate";
 import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
@@ -19,19 +20,13 @@ export async function POST(
     assertTrustedOrigin(req);
     const { id } = await params;
 
-    let body: { userid?: unknown; accountId?: unknown; email?: unknown };
+    let body: unknown;
     try {
       body = await req.json();
     } catch {
       throw new ApiError(400, "BAD_REQUEST", "请求格式错误");
     }
-    const userid =
-      typeof body.userid === "string"
-        ? body.userid.trim()
-        : typeof body.accountId === "string"
-          ? body.accountId.trim()
-          : "";
-    const email = typeof body.email === "string" ? body.email.trim() : "";
+    const { userid, email } = parseRecipient(body);
 
     const order = await transferOrder(id, {
       recipientAccountId: userid || undefined,

@@ -19,22 +19,9 @@ export async function requireAdmin(): Promise<AdminSession> {
   return { adminId: admin.id, username: admin.username };
 }
 
-/**
- * 校验请求来源 (防 CSRF, 规格 §45)
- * 仅允许同源 Origin/Referer; 无 Origin 的非浏览器客户端由 SameSite=Lax 兜底,
- * 但本系统全部为浏览器访问, 因此严格要求。
- */
+/** 浏览器写请求必须提供与站点完全一致的 Origin；不再回退 Referer。 */
 export function assertTrustedOrigin(req: Request): void {
-  const origin = req.headers.get("origin");
-  if (!origin) {
-    // 部分表单 POST 可能不带 Origin, 退化校验 Referer
-    const referer = req.headers.get("referer");
-    if (referer && !referer.startsWith(env.APP_URL)) {
-      throw unauthorized("请求来源不受信任");
-    }
-    return;
-  }
-  if (origin !== env.APP_URL) {
+  if (req.headers.get("origin") !== new URL(env.APP_URL).origin) {
     throw unauthorized("请求来源不受信任");
   }
 }
